@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.html',
-  standalone: false,
+  imports: [RouterOutlet],
+  template: `<router-outlet />`,
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('Picflow-Frontend');
+  protected readonly title = signal('picflow-frontend');
 }

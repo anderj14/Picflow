@@ -1,0 +1,200 @@
+<div class="space-y-8">
+
+  <!-- Page heading -->
+  <div>
+    <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+      Bienvenido, {{ userName() }}
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 mt-1">
+      Aquí tienes un resumen de la actividad de tu estudio hoy.
+    </p>
+  </div>
+
+  <!-- Stats grid -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      @for (i of [1,2,3]; track i) {
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                    border-slate-200 dark:border-slate-800 animate-pulse">
+          <div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-4"></div>
+          <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Total clientes -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+            Total Clientes
+          </span>
+          <span class="material-symbols-outlined text-primary">group</span>
+        </div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white">
+          {{ totalClientes() }}
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">clientes registrados</p>
+      </div>
+
+      <!-- Citas pendientes -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+            Citas Activas
+          </span>
+          <span class="material-symbols-outlined text-primary">schedule</span>
+        </div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white">
+          {{ citasPendientes() }}
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">pendientes y confirmadas</p>
+      </div>
+
+      <!-- Pagos pendientes -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+            Pagos Pendientes
+          </span>
+          <span class="material-symbols-outlined text-primary">payments</span>
+        </div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(pagosPendientes()) }}
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">por cobrar</p>
+      </div>
+
+    </div>
+  }
+
+  <!-- Bottom grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Próximas citas -->
+    <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border
+                border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800
+                  flex justify-between items-center">
+        <h3 class="font-bold text-slate-900 dark:text-white">Próximas Citas</h3>
+        <a routerLink="/appointments"
+           class="text-primary text-sm font-semibold hover:underline">
+          Ver todas
+        </a>
+      </div>
+
+      @if (citasProximas().length === 0) {
+        <div class="px-6 py-12 text-center">
+          <span class="material-symbols-outlined text-4xl text-slate-300
+                       dark:text-slate-600">calendar_today</span>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">
+            No hay citas próximas
+          </p>
+        </div>
+      } @else {
+        <div class="divide-y divide-slate-100 dark:divide-slate-800">
+          @for (cita of citasProximas(); track cita.id) {
+            <div class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50
+                        dark:hover:bg-slate-800/50 transition-colors">
+
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center
+                          justify-center text-primary text-xs font-bold flex-shrink-0">
+                {{ getInitials(cita.nombreCliente) }}
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {{ cita.nombreCliente }}
+                </p>
+                <p class="text-xs text-slate-500 mt-0.5 truncate">
+                  {{ cita.servicio }} · {{ formatDate(cita.fechaHora) }}
+                </p>
+              </div>
+
+              <span class="text-[10px] px-2 py-1 rounded-full font-bold uppercase
+                           tracking-wider flex-shrink-0"
+                    [class]="getEstadoClass(cita.estado)">
+                {{ cita.estado }}
+              </span>
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Quick actions + Facturas -->
+    <div class="space-y-6">
+
+      <!-- Quick actions -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-4">
+          Acciones rápidas
+        </h3>
+        <div class="grid grid-cols-2 gap-3">
+
+          @for (action of quickActions; track action.label) {
+            <a [routerLink]="action.route"
+               class="flex flex-col items-center justify-center p-4 rounded-lg
+                      bg-slate-50 dark:bg-slate-800 border border-slate-100
+                      dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5
+                      transition-all group cursor-pointer">
+              <span class="material-symbols-outlined text-slate-500
+                           group-hover:text-primary mb-2 transition-colors">
+                {{ action.icon }}
+              </span>
+              <span class="text-xs font-semibold text-slate-700
+                           dark:text-slate-300 text-center">
+                {{ action.label }}
+              </span>
+            </a>
+          }
+
+        </div>
+      </div>
+
+      <!-- Facturas pendientes -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-4">
+          Facturas pendientes
+        </h3>
+
+        @if (facturasPendientes().length === 0) {
+          <p class="text-sm text-slate-400 text-center py-4">
+            Sin facturas pendientes
+          </p>
+        } @else {
+          <div class="space-y-3">
+            @for (factura of facturasPendientes(); track factura.id) {
+              <div class="flex items-center justify-between">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-slate-800
+                             dark:text-slate-200 truncate">
+                    {{ factura.nombreCliente }}
+                  </p>
+                  <p class="text-xs text-slate-500">{{ factura.numeroFactura }}</p>
+                </div>
+                <span class="text-sm font-bold text-red-500 flex-shrink-0 ml-2">
+                  {{ formatCurrency(factura.saldoPendiente) }}
+                </span>
+              </div>
+            }
+          </div>
+          <a routerLink="/invoices"
+             class="block mt-4 text-center text-xs font-semibold
+                    text-primary hover:underline">
+            Ver todas las facturas
+          </a>
+        }
+
+      </div>
+    </div>
+
+  </div>
+</div>

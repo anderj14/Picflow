@@ -6,18 +6,11 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "Picflow-Frontend": {
+    "picflow-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss",
-          "standalone": false
-        },
-        "@schematics/angular:directive": {
-          "standalone": false
-        },
-        "@schematics/angular:pipe": {
-          "standalone": false
+          "style": "scss"
         }
       },
       "root": "",
@@ -38,15 +31,7 @@
             ],
             "styles": [
               "src/styles.scss"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            ]
           },
           "configurations": {
             "production": {
@@ -76,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "Picflow-Frontend:build:production"
+              "buildTarget": "picflow-frontend:build:production"
             },
             "development": {
-              "buildTarget": "Picflow-Frontend:build:development"
+              "buildTarget": "picflow-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

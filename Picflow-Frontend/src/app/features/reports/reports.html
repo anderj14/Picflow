@@ -1,0 +1,140 @@
+<div class="space-y-8">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+        Reportes
+      </h2>
+      <p class="text-slate-500 text-sm mt-0.5">
+        Análisis del desempeño del estudio
+      </p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center gap-3 py-20 text-slate-400">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      Cargando datos...
+    </div>
+  } @else {
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-slate-500 text-sm font-medium mb-2">Total Ingresos</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(stats().totalRevenue) }}
+        </p>
+        <div class="mt-2 h-1 bg-primary/20 rounded-full">
+          <div class="h-full bg-primary rounded-full w-3/4"></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-slate-500 text-sm font-medium mb-2">Por Cobrar</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(stats().totalPendiente) }}
+        </p>
+        <div class="mt-2 h-1 bg-yellow-200 rounded-full">
+          <div class="h-full bg-yellow-500 rounded-full w-1/2"></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-slate-500 text-sm font-medium mb-2">Valor Promedio</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">
+          {{ formatCurrency(stats().avgBooking) }}
+        </p>
+        <div class="mt-2 h-1 bg-green-200 rounded-full">
+          <div class="h-full bg-green-500 rounded-full w-2/3"></div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm">
+        <p class="text-slate-500 text-sm font-medium mb-2">Total Citas</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white">
+          {{ stats().totalCitas }}
+        </p>
+        <div class="mt-2 h-1 bg-purple-200 rounded-full">
+          <div class="h-full bg-purple-500 rounded-full w-4/5"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Revenue bar chart -->
+      <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-bold text-slate-900 dark:text-white">
+            Ingresos por período
+          </h3>
+        </div>
+        @if (Object.keys(monthlyRevenue()).length === 0) {
+          <div class="flex items-center justify-center h-48 text-slate-400">
+            <div class="text-center">
+              <span class="material-symbols-outlined text-4xl">bar_chart</span>
+              <p class="text-sm mt-2">Sin datos de ingresos aún</p>
+            </div>
+          </div>
+        } @else {
+          <div style="height: 240px; position: relative;">
+            <canvas #revenueChart></canvas>
+          </div>
+        }
+      </div>
+
+      <!-- Donut chart -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border
+                  border-slate-200 dark:border-slate-800 shadow-sm p-6">
+        <h3 class="font-bold text-slate-900 dark:text-white mb-6">
+          Estado de Citas
+        </h3>
+        @if (stats().totalCitas === 0) {
+          <div class="flex items-center justify-center h-48 text-slate-400">
+            <div class="text-center">
+              <span class="material-symbols-outlined text-4xl">donut_large</span>
+              <p class="text-sm mt-2">Sin citas registradas</p>
+            </div>
+          </div>
+        } @else {
+          <div style="height: 240px; position: relative;">
+            <canvas #statusChart></canvas>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Completadas</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">
+                {{ stats().completadas }}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Pendientes</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">
+                {{ stats().pendientes }}
+              </span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500">Canceladas</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">
+                {{ stats().canceladas }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+
+  }
+
+</div>

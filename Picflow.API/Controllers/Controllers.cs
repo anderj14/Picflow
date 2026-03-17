@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Picflow.Core.DTOs.Request;
+using Picflow.Core.Enums;
+using Picflow.Core.Interfaces.Repositories;
 using Picflow.Core.Interfaces.Services;
 
 namespace Picflow.API.Controllers;
@@ -24,6 +26,27 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.RegisterAsync(request);
         return CreatedAtAction(nameof(Register), result);
+    }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class UsuariosController(IUsuarioRepository usuarioRepo) : ControllerBase
+{
+    [HttpGet("fotografos")]
+    public async Task<IActionResult> GetFotografos()
+    {
+        var fotografos = await usuarioRepo.GetByRolAsync(RolUsuario.Fotografo);
+        var admins = await usuarioRepo.GetByRolAsync(RolUsuario.Administrador);
+        var todos = fotografos.Concat(admins).Select(u => new
+        {
+            id = u.Id,
+            nombre = u.Nombre,
+            email = u.Email,
+            rol = u.Rol.ToString()
+        });
+        return Ok(todos);
     }
 }
 
