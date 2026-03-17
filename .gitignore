@@ -45,3 +45,6 @@ packages/
 
 ## macOS
 .DS_Store
+
+
+**/appsettings*.json
