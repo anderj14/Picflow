@@ -1,109 +1,118 @@
-# Picflow API — Backend
+# Picflow
 
 Sistema de gestión digital para **Acción Fotovídeo**, Santiago de los Caballeros, RD.
+
+Permite administrar clientes, citas, fotografías, facturas y reportes desde una interfaz web con control de acceso por roles.
+
+---
 
 ## Stack
 
 | Capa | Tecnología |
 |------|-----------|
-| API | ASP.NET Core 9 Web API |
+| Frontend | Angular 21 (Standalone Components) |
+| Estilos | Tailwind CSS 4 + SCSS |
+| Backend | ASP.NET Core 9 Web API |
 | Autenticación | JWT Bearer |
 | Base de datos | MongoDB Atlas |
-| Almacenamiento | Cloudinary |
+| Almacenamiento de medios | Cloudinary |
 | Despliegue | Azure App Service |
+
+---
 
 ## Estructura del proyecto
 
 ```
 Picflow/
 ├── Picflow.sln
-├── Picflow.API/              ← Capa de presentación
-│   ├── Controllers/          ← Endpoints REST
-│   ├── Middleware/           ← ExceptionMiddleware
-│   ├── Program.cs            ← Entry point y configuración
+│
+├── Picflow.API/                  ← Capa de presentación (REST)
+│   ├── Controllers/              ← Endpoints por módulo
+│   ├── Middleware/               ← ExceptionMiddleware global
+│   ├── Program.cs                ← Entry point y configuración DI
 │   └── appsettings.json
 │
-├── Picflow.Core/             ← Dominio y lógica de negocio
-│   ├── Entities/             ← Modelos del dominio
+├── Picflow.Core/                 ← Dominio y lógica de negocio
+│   ├── Entities/                 ← Modelos: Usuario, Cliente, Cita, Fotografia, Factura, Pago
 │   ├── Interfaces/
-│   │   ├── Repositories/     ← Contratos de acceso a datos
-│   │   └── Services/         ← Contratos de servicios
-│   ├── Services/             ← Implementaciones de lógica
+│   │   ├── Repositories/         ← Contratos de acceso a datos
+│   │   └── Services/             ← Contratos de servicios
+│   ├── Services/                 ← AuthService, ClienteService, CitaService, etc.
 │   ├── DTOs/
-│   │   ├── Request/          ← Entrada de datos
-│   │   └── Response/         ← Salida de datos
-│   ├── Enums/
+│   │   ├── Request/              ← Entrada de datos
+│   │   └── Response/             ← Salida de datos
+│   ├── Enums/                    ← RolUsuario, EstadoCita, EstadoFactura
 │   ├── Exceptions/
-│   └── Common/               ← BaseEntity
+│   └── Common/                   ← BaseEntity
 │
-└── Picflow.Infrastructure/   ← Acceso a datos e integraciones
-    ├── Repositories/         ← Implementaciones MongoDB
-    ├── Services/             ← CloudinaryMediaService
-    ├── Persistence/          ← DbContext e índices
-    └── Configuration/        ← Serialización BSON
+├── Picflow.Infrastructure/       ← Acceso a datos e integraciones externas
+│   ├── Repositories/             ← Implementaciones MongoDB (CRUD + índices)
+│   ├── Services/                 ← JwtTokenService, CloudinaryMediaService
+│   ├── Persistence/              ← PicflowDbContext (6 colecciones)
+│   └── Configuration/            ← Serialización BSON, MongoDbConfiguration
+│
+└── picflow-frontend/             ← Angular SPA
+    └── src/app/
+        ├── core/
+        │   ├── services/         ← api.service.ts, auth.service.ts
+        │   ├── guards/           ← auth.guard.ts
+        │   ├── interceptors/     ← auth.interceptor.ts (adjunta JWT)
+        │   └── models/           ← Interfaces TypeScript de cada entidad
+        ├── features/
+        │   ├── auth/login/       ← Pantalla de inicio de sesión
+        │   ├── dashboard/        ← Panel principal con métricas
+        │   ├── clients/          ← Gestión de clientes
+        │   ├── appointments/     ← Gestión de citas
+        │   ├── assets/           ← Biblioteca de fotografías
+        │   ├── invoices/         ← Facturas y pagos
+        │   └── reports/          ← Reportes y analítica
+        └── shared/components/
+            ├── layout/           ← Contenedor principal autenticado
+            ├── sidebar/          ← Navegación lateral
+            └── header/           ← Barra superior
 ```
 
-## Dependencias entre capas
+---
+
+## Dependencias entre capas (backend)
 
 ```
 API ──► Core ◄── Infrastructure
 ```
 
-- **Core** no referencia nada externo — solo `System.IdentityModel.Tokens.Jwt` para generar tokens.
+- **Core** no referencia proyectos externos — solo el JWT SDK para generación de tokens.
 - **Infrastructure** implementa las interfaces definidas en Core.
-- **API** orquesta: registra todo en DI y expone los endpoints.
-
-## Configuración inicial
-
-### 1. Clonar y restaurar paquetes
-
-```bash
-git clone https://github.com/tu-org/picflow-api.git
-cd picflow-api
-dotnet restore
-```
-
-### 2. Configurar secrets locales (no usar appsettings para credenciales)
-
-```bash
-cd Picflow.API
-
-dotnet user-secrets set "MongoDB:ConnectionString" "mongodb+srv://user:pass@cluster.mongodb.net/"
-dotnet user-secrets set "MongoDB:DatabaseName" "picflow_dev"
-dotnet user-secrets set "Cloudinary:CloudName" "tu-cloud-name"
-dotnet user-secrets set "Cloudinary:ApiKey" "tu-api-key"
-dotnet user-secrets set "Cloudinary:ApiSecret" "tu-api-secret"
-dotnet user-secrets set "Jwt:SecretKey" "una-clave-muy-segura-de-32-o-mas-caracteres"
-```
-
-### 3. Ejecutar en desarrollo
-
-```bash
-dotnet run --project Picflow.API
-```
-
-La API queda disponible en `https://localhost:7xxx` y Swagger en `/swagger`.
-
-### 4. Crear el primer usuario administrador
-
-```bash
-# Con la API corriendo, hacer POST a /api/auth/register
-# (Este endpoint requiere rol Administrador — ver sección Bootstrap)
-```
-
-> **Bootstrap:** La primera vez, desactiva temporalmente el `[Authorize]` en el endpoint `register`, crea el admin, y vuelve a activarlo. O usa un seed script.
+- **API** orquesta: registra servicios en DI y expone los endpoints.
 
 ---
 
-## Endpoints principales
+## Módulos del frontend
+
+| Ruta | Módulo | Descripción |
+|------|--------|-------------|
+| `/login` | Auth | Autenticación pública |
+| `/dashboard` | Dashboard | Métricas y resumen general |
+| `/clients` | Clients | Alta, edición y búsqueda de clientes |
+| `/appointments` | Appointments | Agenda y gestión de citas |
+| `/assets` | Assets | Subida y visualización de fotografías |
+| `/invoices` | Invoices | Emisión de facturas y registro de pagos |
+| `/reports` | Reports | Reportes de ingresos y actividad |
+
+Todas las rutas excepto `/login` requieren autenticación (`authGuard`). Los módulos se cargan de forma diferida (lazy loading).
+
+---
+
+## API — Endpoints principales
 
 ### Auth
+
 | Método | Ruta | Acceso |
 |--------|------|--------|
 | POST | `/api/auth/login` | Público |
-| POST | `/api/auth/register` | Admin |
+| POST | `/api/auth/register` | Administrador |
 
 ### Clientes
+
 | Método | Ruta | Acceso |
 |--------|------|--------|
 | GET | `/api/clientes` | Autenticado |
@@ -111,9 +120,10 @@ La API queda disponible en `https://localhost:7xxx` y Swagger en `/swagger`.
 | GET | `/api/clientes/search?q=texto` | Autenticado |
 | POST | `/api/clientes` | Autenticado |
 | PUT | `/api/clientes/{id}` | Autenticado |
-| DELETE | `/api/clientes/{id}` | Admin |
+| DELETE | `/api/clientes/{id}` | Administrador |
 
 ### Citas
+
 | Método | Ruta | Acceso |
 |--------|------|--------|
 | GET | `/api/citas` | Autenticado |
@@ -123,25 +133,27 @@ La API queda disponible en `https://localhost:7xxx` y Swagger en `/swagger`.
 | POST | `/api/citas` | Autenticado |
 | PUT | `/api/citas/{id}` | Autenticado |
 | PATCH | `/api/citas/{id}/estado` | Autenticado |
-| DELETE | `/api/citas/{id}` | Admin / Recepcionista |
+| DELETE | `/api/citas/{id}` | Administrador / Recepcionista |
 
 ### Fotografías
+
 | Método | Ruta | Acceso |
 |--------|------|--------|
 | GET | `/api/fotografias/cita/{citaId}` | Autenticado |
 | GET | `/api/fotografias/cliente/{clienteId}` | Autenticado |
-| POST | `/api/fotografias/upload` | Admin / Fotógrafo |
-| PATCH | `/api/fotografias/entregar` | Admin / Fotógrafo |
-| DELETE | `/api/fotografias/{id}` | Admin / Fotógrafo |
+| POST | `/api/fotografias/upload` | Administrador / Fotógrafo |
+| PATCH | `/api/fotografias/entregar` | Administrador / Fotógrafo |
+| DELETE | `/api/fotografias/{id}` | Administrador / Fotógrafo |
 
 ### Facturas
+
 | Método | Ruta | Acceso |
 |--------|------|--------|
 | GET | `/api/facturas/{id}` | Autenticado |
 | GET | `/api/facturas/cliente/{clienteId}` | Autenticado |
 | GET | `/api/facturas/pendientes` | Autenticado |
-| POST | `/api/facturas` | Admin / Recepcionista |
-| POST | `/api/facturas/{id}/pagos` | Admin / Recepcionista |
+| POST | `/api/facturas` | Administrador / Recepcionista |
+| POST | `/api/facturas/{id}/pagos` | Administrador / Recepcionista |
 
 ---
 
@@ -150,56 +162,137 @@ La API queda disponible en `https://localhost:7xxx` y Swagger en `/swagger`.
 | Rol | Permisos |
 |-----|---------|
 | `Administrador` | Acceso total |
-| `Fotografo` | Ver todo, subir/gestionar fotos, ver/actualizar sus citas |
+| `Fotografo` | Ver todo, subir/gestionar fotos, ver y actualizar sus citas |
 | `Recepcionista` | Gestionar clientes, citas y facturación |
+
+---
+
+## Base de datos (MongoDB)
+
+| Colección | Descripción |
+|-----------|-------------|
+| `usuarios` | Usuarios del sistema con rol y credenciales |
+| `clientes` | Datos de clientes del estudio |
+| `citas` | Citas vinculadas a clientes y fotógrafos |
+| `fotografias` | Metadatos de fotos almacenadas en Cloudinary |
+| `facturas` | Facturas con detalle de servicios y estado de pago |
+| `pagos` | Registros de pago por factura |
+
+Los números de factura se generan automáticamente con el formato `PF-YYYY-NNNN` y se reinician por año fiscal.
+
+---
+
+## Configuración inicial
+
+### Backend
+
+#### 1. Restaurar dependencias
+
+```bash
+git clone <repo-url>
+cd Picflow
+dotnet restore
+```
+
+#### 2. Configurar secrets locales
+
+```bash
+cd Picflow.API
+
+dotnet user-secrets set "MongoDB:ConnectionString" "mongodb+srv://user:pass@cluster.mongodb.net/"
+dotnet user-secrets set "MongoDB:DatabaseName" "picflow_dev"
+dotnet user-secrets set "Cloudinary:CloudName" "tu-cloud-name"
+dotnet user-secrets set "Cloudinary:ApiKey" "tu-api-key"
+dotnet user-secrets set "Cloudinary:ApiSecret" "tu-api-secret"
+dotnet user-secrets set "Jwt:SecretKey" "clave-secreta-de-32-o-mas-caracteres"
+dotnet user-secrets set "Jwt:Issuer" "picflow-api"
+dotnet user-secrets set "Jwt:Audience" "picflow-frontend"
+```
+
+#### 3. Ejecutar
+
+```bash
+dotnet run --project Picflow.API
+```
+
+La API queda disponible en `https://localhost:7xxx` y la documentación Swagger en `/swagger`.
+
+#### 4. Crear el primer administrador
+
+La primera vez, desactiva temporalmente el `[Authorize]` en el endpoint `POST /api/auth/register`, crea el usuario administrador y vuelve a activarlo.
+
+---
+
+### Frontend
+
+#### 1. Instalar dependencias
+
+```bash
+cd picflow-frontend
+npm install
+```
+
+#### 2. Configurar el entorno
+
+Edita `src/environments/environment.ts` y define la URL de la API:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'https://localhost:7xxx/api'
+};
+```
+
+#### 3. Ejecutar en desarrollo
+
+```bash
+npm start
+```
+
+La app queda disponible en `http://localhost:4200`.
+
+#### 4. Build para producción
+
+```bash
+npm run build
+```
+
+Los artefactos se generan en `dist/picflow-frontend/`.
 
 ---
 
 ## Despliegue en Azure
 
-### App Service (backend)
+### Backend — App Service
 
 ```bash
-# Build para producción
 dotnet publish Picflow.API -c Release -o ./publish
-
-# Configurar variables de entorno en Azure Portal
-# App Service > Configuration > Application settings:
-# MongoDB__ConnectionString
-# MongoDB__DatabaseName
-# Cloudinary__CloudName
-# Cloudinary__ApiKey
-# Cloudinary__ApiSecret
-# Jwt__SecretKey
-# Jwt__Issuer
-# Jwt__Audience
 ```
 
-### GitHub Actions (CI/CD)
-
-Crear `.github/workflows/deploy-api.yml` y configurar el secreto `AZURE_WEBAPP_PUBLISH_PROFILE`.
-
----
-
-## Números de factura
-
-El sistema genera números automáticos con formato:
+Configurar en **Azure Portal → App Service → Configuration → Application settings**:
 
 ```
-PF-2025-0001
-PF-2025-0002
-...
+MongoDB__ConnectionString
+MongoDB__DatabaseName
+Cloudinary__CloudName
+Cloudinary__ApiKey
+Cloudinary__ApiSecret
+Jwt__SecretKey
+Jwt__Issuer
+Jwt__Audience
 ```
 
-Se reinician por año fiscal.
+### CI/CD con GitHub Actions
+
+Crear `.github/workflows/deploy-api.yml` y agregar el secreto `AZURE_WEBAPP_PUBLISH_PROFILE` en el repositorio.
 
 ---
 
 ## Próximos pasos sugeridos
 
-- [ ] Agregar `ReporteService` (ingresos, cuentas pendientes)
-- [ ] Seed de datos iniciales (primer admin)
+- [ ] Seed de datos iniciales (primer administrador)
 - [ ] Validaciones con FluentValidation
-- [ ] Tests unitarios (xUnit + Moq)
+- [ ] Tests unitarios — xUnit + Moq (backend) / Vitest (frontend)
 - [ ] Rate limiting en endpoints públicos
 - [ ] Logging estructurado con Serilog → Azure Application Insights
+- [ ] Notificaciones por correo al confirmar/cancelar citas

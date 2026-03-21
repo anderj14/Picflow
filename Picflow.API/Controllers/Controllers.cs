@@ -151,13 +151,22 @@ public class FotografiasController(IFotografiaService fotografiaService) : Contr
 
     [HttpPost("upload")]
     [Authorize(Roles = "Administrador,Fotografo")]
-    public async Task<IActionResult> Upload([FromForm] IFormFile archivo,
-        [FromForm] string citaId, [FromForm] string clienteId,
-        [FromForm] string titulo, [FromForm] string descripcion)
+    public async Task<IActionResult> Upload(
+        [FromForm] IFormFile archivo,
+        [FromForm] string clienteId,
+        [FromForm] string titulo,
+        [FromForm] string? citaId = null,
+        [FromForm] string? descripcion = null)
     {
         using var stream = archivo.OpenReadStream();
-        var request = new UploadFotografiaRequest(citaId, clienteId, stream,
-            archivo.FileName, titulo, descripcion);
+        var request = new UploadFotografiaRequest(
+            citaId ?? string.Empty,
+            clienteId,
+            stream,
+            archivo.FileName,
+            titulo,
+            descripcion ?? string.Empty
+        );
         var result = await fotografiaService.UploadAsync(request);
         return Ok(result);
     }

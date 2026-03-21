@@ -87,9 +87,7 @@ export class Assets implements OnInit {
       const formData = new FormData();
       formData.append('archivo', file);
       formData.append('clienteId', clienteId);
-      formData.append('citaId', '');
       formData.append('titulo', file.name.replace(/\.[^.]+$/, ''));
-      formData.append('descripcion', '');
 
       this.api.uploadFotografia(formData).subscribe({
         next: () => {
