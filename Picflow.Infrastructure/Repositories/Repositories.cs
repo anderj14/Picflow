@@ -112,4 +112,57 @@ public class PagoRepository(PicflowDbContext ctx)
         var pagos = await GetByFacturaIdAsync(facturaId);
         return pagos.Sum(p => p.Monto);
     }
+
+    public async Task<IEnumerable<Pago>> GetByClienteIdAsync(string clienteId)
+    {
+        var facturaIds = await ctx.Facturas
+            .Find(f => f.ClienteId == clienteId)
+            .Project(f => f.Id)
+            .ToListAsync();
+
+        return await Collection.Find(p => facturaIds.Contains(p.FacturaId))
+            .SortByDescending(p => p.Fecha).ToListAsync();
+    }
+}
+
+public class CategoriaRepository(PicflowDbContext ctx)
+    : MongoRepository<Categoria>(ctx.Categorias), ICategoriaRepository
+{
+    public async Task<IEnumerable<Categoria>> GetActivasAsync() =>
+        await Collection.Find(c => c.Activa).SortBy(c => c.Nombre).ToListAsync();
+}
+
+public class ServicioRepository(PicflowDbContext ctx)
+    : MongoRepository<Servicio>(ctx.Servicios), IServicioRepository
+{
+    public async Task<IEnumerable<Servicio>> GetByCategoriaIdAsync(string categoriaId) =>
+        await Collection.Find(s => s.CategoriaId == categoriaId && s.Activo)
+            .SortBy(s => s.Nombre).ToListAsync();
+
+    public async Task<IEnumerable<Servicio>> GetActivosAsync() =>
+        await Collection.Find(s => s.Activo).SortBy(s => s.Nombre).ToListAsync();
+
+    public async Task<Servicio?> GetByCodigoBarrasAsync(string codigoBarras) =>
+        await Collection.Find(s => s.CodigoBarras == codigoBarras).FirstOrDefaultAsync();
+}
+
+public class PreOrdenRepository(PicflowDbContext ctx)
+    : MongoRepository<PreOrden>(ctx.PreOrdenes), IPreOrdenRepository
+{
+    public async Task<IEnumerable<PreOrden>> GetByClienteIdAsync(string clienteId) =>
+        await Collection.Find(p => p.ClienteId == clienteId)
+            .SortByDescending(p => p.CreadoEn).ToListAsync();
+
+    public async Task<IEnumerable<PreOrden>> GetByEstadoAsync(EstadoPreOrden estado) =>
+        await Collection.Find(p => p.Estado == estado)
+            .SortByDescending(p => p.CreadoEn).ToListAsync();
+
+    public async Task<string> GenerarNumeroPreOrdenAsync()
+    {
+        var anio = DateTime.UtcNow.Year;
+        var count = await Collection.CountDocumentsAsync(
+            Builders<PreOrden>.Filter.Regex(p => p.NumeroPreOrden,
+                new MongoDB.Bson.BsonRegularExpression($"^PO-{anio}-")));
+        return $"PO-{anio}-{(count + 1):D4}";
+    }
 }

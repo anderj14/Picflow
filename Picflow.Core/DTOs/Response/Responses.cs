@@ -28,7 +28,8 @@ public record ClienteResponse(
     string Cedula,
     string Direccion,
     string Notas,
-    DateTime FechaRegistro
+    DateTime FechaRegistro,
+    decimal SaldoFavor
 );
 
 public record CitaResponse(
@@ -57,7 +58,20 @@ public record FotografiaResponse(
     bool Entregada,
     long TamanioBytes,
     string Formato,
-    DateTime FechaSubida
+    DateTime FechaSubida,
+    List<OpcionImpresionResponse> OpcionesImpresion
+);
+
+public record OpcionImpresionResponse(
+    string CategoriaId,
+    string NombreCategoria,
+    string SubCategoriaId,
+    string NombreSubCategoria,
+    string ServicioId,
+    string Tamanio,
+    string TipoAcabado,
+    int Cantidad,
+    decimal PrecioUnitario
 );
 
 public record FacturaResponse(
@@ -73,13 +87,17 @@ public record FacturaResponse(
     decimal Total,
     decimal TotalPagado,
     decimal SaldoPendiente,
+    decimal SaldoFavorAplicado,
     EstadoFactura Estado,
+    string? PreOrdenId,
     string Notas,
     List<PagoResponse> Pagos
 );
 
 public record ItemFacturaResponse(
+    string ServicioId,
     string Descripcion,
+    string CodigoBarras,
     int Cantidad,
     decimal PrecioUnitario,
     decimal Subtotal
@@ -88,6 +106,83 @@ public record ItemFacturaResponse(
 public record PagoResponse(
     string Id,
     string FacturaId,
+    DateTime Fecha,
+    decimal Monto,
+    MetodoPago Metodo,
+    string Referencia,
+    string Notas
+);
+
+// Categoria
+public record CategoriaResponse(
+    string Id,
+    string Nombre,
+    string Descripcion,
+    List<SubCategoriaResponse> SubCategorias,
+    bool Activa,
+    DateTime CreadoEn
+);
+
+public record SubCategoriaResponse(
+    string Id,
+    string Nombre,
+    TipoSubCategoria Tipo
+);
+
+// Servicio
+public record ServicioResponse(
+    string Id,
+    string Nombre,
+    string Descripcion,
+    string CategoriaId,
+    string NombreCategoria,
+    string SubCategoriaId,
+    string NombreSubCategoria,
+    decimal PrecioBase,
+    string CodigoBarras,
+    bool Activo,
+    DateTime CreadoEn
+);
+
+// PreOrden
+public record PreOrdenResponse(
+    string Id,
+    string NumeroPreOrden,
+    string ClienteId,
+    string NombreCliente,
+    string CitaId,
+    List<ItemPreOrdenResponse> Items,
+    decimal Subtotal,
+    decimal Impuesto,
+    decimal Total,
+    EstadoPreOrden Estado,
+    string? FacturaId,
+    string Notas,
+    DateTime CreadoEn
+);
+
+public record ItemPreOrdenResponse(
+    string ServicioId,
+    string Descripcion,
+    string CodigoBarras,
+    int Cantidad,
+    decimal PrecioUnitario,
+    decimal Subtotal,
+    OpcionImpresionResponse? OpcionImpresion
+);
+
+// Historial de pagos
+public record HistorialPagosResponse(
+    string ClienteId,
+    string NombreCliente,
+    decimal SaldoFavor,
+    List<PagoDetalleResponse> Pagos
+);
+
+public record PagoDetalleResponse(
+    string Id,
+    string FacturaId,
+    string NumeroFactura,
     DateTime Fecha,
     decimal Monto,
     MetodoPago Metodo,

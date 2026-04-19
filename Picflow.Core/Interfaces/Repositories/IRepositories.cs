@@ -42,4 +42,24 @@ public interface IPagoRepository : IRepository<Pago>
 {
     Task<IEnumerable<Pago>> GetByFacturaIdAsync(string facturaId);
     Task<decimal> GetTotalPagadoByFacturaAsync(string facturaId);
+    Task<IEnumerable<Pago>> GetByClienteIdAsync(string clienteId);
+}
+
+public interface ICategoriaRepository : IRepository<Categoria>
+{
+    Task<IEnumerable<Categoria>> GetActivasAsync();
+}
+
+public interface IServicioRepository : IRepository<Servicio>
+{
+    Task<IEnumerable<Servicio>> GetByCategoriaIdAsync(string categoriaId);
+    Task<IEnumerable<Servicio>> GetActivosAsync();
+    Task<Servicio?> GetByCodigoBarrasAsync(string codigoBarras);
+}
+
+public interface IPreOrdenRepository : IRepository<PreOrden>
+{
+    Task<IEnumerable<PreOrden>> GetByClienteIdAsync(string clienteId);
+    Task<IEnumerable<PreOrden>> GetByEstadoAsync(EstadoPreOrden estado);
+    Task<string> GenerarNumeroPreOrdenAsync();
 }

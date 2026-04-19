@@ -26,6 +26,9 @@ public class PicflowDbContext
     public IMongoCollection<Fotografia> Fotografias => _db.GetCollection<Fotografia>("fotografias");
     public IMongoCollection<Factura> Facturas => _db.GetCollection<Factura>("facturas");
     public IMongoCollection<Pago> Pagos => _db.GetCollection<Pago>("pagos");
+    public IMongoCollection<Categoria> Categorias => _db.GetCollection<Categoria>("categorias");
+    public IMongoCollection<Servicio> Servicios => _db.GetCollection<Servicio>("servicios");
+    public IMongoCollection<PreOrden> PreOrdenes => _db.GetCollection<PreOrden>("preordenes");
 
     private void ConfigureIndexes()
     {
@@ -65,5 +68,23 @@ public class PicflowDbContext
         // Pagos
         Pagos.Indexes.CreateOne(new CreateIndexModel<Pago>(
             Builders<Pago>.IndexKeys.Ascending(p => p.FacturaId)));
+
+        // Categorias
+        Categorias.Indexes.CreateOne(new CreateIndexModel<Categoria>(
+            Builders<Categoria>.IndexKeys.Ascending(c => c.Nombre)));
+
+        // Servicios
+        Servicios.Indexes.CreateOne(new CreateIndexModel<Servicio>(
+            Builders<Servicio>.IndexKeys.Ascending(s => s.CategoriaId).Ascending(s => s.Activo)));
+        Servicios.Indexes.CreateOne(new CreateIndexModel<Servicio>(
+            Builders<Servicio>.IndexKeys.Ascending(s => s.CodigoBarras),
+            new CreateIndexOptions { Sparse = true }));
+
+        // PreOrdenes
+        PreOrdenes.Indexes.CreateOne(new CreateIndexModel<PreOrden>(
+            Builders<PreOrden>.IndexKeys.Ascending(p => p.NumeroPreOrden),
+            new CreateIndexOptions { Unique = true }));
+        PreOrdenes.Indexes.CreateOne(new CreateIndexModel<PreOrden>(
+            Builders<PreOrden>.IndexKeys.Ascending(p => p.ClienteId).Ascending(p => p.Estado)));
     }
 }

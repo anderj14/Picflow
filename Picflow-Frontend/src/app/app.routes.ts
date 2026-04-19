@@ -35,14 +35,29 @@ export const routes: Routes = [
           import('./features/invoices/invoices').then(m => m.Invoices),
       },
       {
+        path: 'pre-orders',
+        loadComponent: () =>
+          import('./features/pre-orders/pre-orders').then(m => m.PreOrders),
+      },
+      {
         path: 'assets',
         loadComponent: () =>
           import('./features/assets/assets').then(m => m.Assets),
       },
       {
+        path: 'catalog',
+        loadComponent: () =>
+          import('./features/catalog/catalog').then(m => m.Catalog),
+      },
+      {
         path: 'reports',
         loadComponent: () =>
           import('./features/reports/reports').then(m => m.Reports),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/users').then(m => m.Users),
       },
     ],
   },

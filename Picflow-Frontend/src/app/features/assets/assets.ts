@@ -1,8 +1,19 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
-import { Fotografia } from '../../core/models/fotografia.model';
+import { Fotografia, OpcionImpresion } from '../../core/models/fotografia.model';
 import { Cliente } from '../../core/models/cliente.model';
+import { Categoria, Servicio } from '../../core/models/catalogo.model';
+
+interface OpcionForm {
+  categoriaId: string;
+  subCategoriaId: string;
+  servicioId: string;
+  tamanio: string;
+  tipoAcabado: string;
+  cantidad: number;
+  precioUnitario: number;
+}
 
 @Component({
   selector: 'app-assets',
@@ -13,6 +24,8 @@ import { Cliente } from '../../core/models/cliente.model';
 export class Assets implements OnInit {
   fotografias = signal<Fotografia[]>([]);
   clientes = signal<Cliente[]>([]);
+  categorias = signal<Categoria[]>([]);
+  servicios = signal<Servicio[]>([]);
   loading = signal(true);
   uploading = signal(false);
   uploadProgress = signal(0);
@@ -22,6 +35,12 @@ export class Assets implements OnInit {
   selectedIds = signal<Set<string>>(new Set());
   errorMsg = signal('');
   successMsg = signal('');
+
+  // Opciones de impresión
+  showOpcionModal = signal(false);
+  selectedFotografia = signal<Fotografia | null>(null);
+  opcionForm: OpcionForm = this.emptyOpcionForm();
+  savingOpcion = signal(false);
 
   readonly filtered = computed(() => {
     let result = this.fotografias();
@@ -36,9 +55,21 @@ export class Assets implements OnInit {
     return (bytes / (1024 * 1024)).toFixed(1);
   });
 
-  constructor(private api: ApiService) { }
+  readonly subCategoriasDeForm = computed(() => {
+    const id = this.opcionForm.categoriaId;
+    return this.categorias().find(c => c.id === id)?.subCategorias ?? [];
+  });
+
+  readonly serviciosDeCategoria = computed(() => {
+    const id = this.opcionForm.categoriaId;
+    return id ? this.servicios().filter(s => s.categoriaId === id) : this.servicios();
+  });
+
+  constructor(private api: ApiService) {}
 
   ngOnInit() {
+    this.api.getCategorias().subscribe({ next: d => this.categorias.set(d) });
+    this.api.getServicios().subscribe({ next: d => this.servicios.set(d) });
     this.api.getClientes().subscribe({
       next: (data) => {
         this.clientes.set(data);
@@ -125,8 +156,7 @@ export class Assets implements OnInit {
   }
 
   selectAll() {
-    const all = new Set(this.filtered().map(f => f.id));
-    this.selectedIds.set(all);
+    this.selectedIds.set(new Set(this.filtered().map(f => f.id)));
   }
 
   clearSelection() {
@@ -148,18 +178,75 @@ export class Assets implements OnInit {
   deleteSelected() {
     const ids = Array.from(this.selectedIds());
     if (!ids.length || !confirm(`¿Eliminar ${ids.length} foto(s)?`)) return;
-
     let completed = 0;
     ids.forEach(id => {
       this.api.deleteFotografia(id).subscribe({
         next: () => {
           completed++;
-          if (completed === ids.length) {
-            this.loadFotos(this.selectedClienteId());
-          }
+          if (completed === ids.length) this.loadFotos(this.selectedClienteId());
         },
       });
     });
+  }
+
+  // ── Opciones de impresión ─────────────────────────────────────────────────
+  openOpcionModal(foto: Fotografia) {
+    this.selectedFotografia.set(foto);
+    this.opcionForm = this.emptyOpcionForm();
+    this.showOpcionModal.set(true);
+  }
+
+  closeOpcionModal() {
+    this.showOpcionModal.set(false);
+    this.selectedFotografia.set(null);
+  }
+
+  onServicioOpcionChange() {
+    const servicio = this.servicios().find(s => s.id === this.opcionForm.servicioId);
+    if (servicio) {
+      this.opcionForm.precioUnitario = servicio.precioBase;
+      if (!this.opcionForm.categoriaId) this.opcionForm.categoriaId = servicio.categoriaId;
+    }
+  }
+
+  saveOpcion() {
+    const foto = this.selectedFotografia();
+    if (!foto) return;
+
+    this.savingOpcion.set(true);
+    this.api.agregarOpcionImpresion(foto.id, this.opcionForm).subscribe({
+      next: (updated) => {
+        this.fotografias.update(fotos =>
+          fotos.map(f => f.id === updated.id ? updated : f)
+        );
+        this.closeOpcionModal();
+        this.savingOpcion.set(false);
+        this.successMsg.set('Opción de impresión agregada.');
+        setTimeout(() => this.successMsg.set(''), 3000);
+      },
+      error: () => { this.savingOpcion.set(false); },
+    });
+  }
+
+  eliminarOpcion(foto: Fotografia, subCategoriaId: string) {
+    if (!confirm('¿Eliminar esta opción de impresión?')) return;
+    this.api.eliminarOpcionImpresion(foto.id, subCategoriaId).subscribe({
+      next: (updated) => {
+        this.fotografias.update(fotos =>
+          fotos.map(f => f.id === updated.id ? updated : f)
+        );
+      },
+    });
+  }
+
+  totalOpcionesImpresion(foto: Fotografia): number {
+    return foto.opcionesImpresion.reduce((s, o) => s + o.cantidad, 0);
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-DO', {
+      style: 'currency', currency: 'DOP', maximumFractionDigits: 0
+    }).format(value);
   }
 
   formatSize(bytes: number): string {
@@ -183,5 +270,12 @@ export class Assets implements OnInit {
 
   getClienteNombre(): string {
     return this.clientes().find(c => c.id === this.selectedClienteId())?.nombre ?? '';
+  }
+
+  private emptyOpcionForm(): OpcionForm {
+    return {
+      categoriaId: '', subCategoriaId: '', servicioId: '',
+      tamanio: '', tipoAcabado: '', cantidad: 1, precioUnitario: 0,
+    };
   }
 }

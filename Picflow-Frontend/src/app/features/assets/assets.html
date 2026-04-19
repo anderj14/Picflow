@@ -43,9 +43,7 @@
     <div class="bg-white dark:bg-slate-900 rounded-xl border
                 border-slate-200 dark:border-slate-800 p-4">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-semibold text-primary">
-          Subiendo fotos...
-        </span>
+        <span class="text-sm font-semibold text-primary">Subiendo fotos...</span>
         <span class="text-sm font-bold text-slate-600 dark:text-slate-400">
           {{ uploadProgress() }}%
         </span>
@@ -76,7 +74,6 @@
   <!-- Toolbar -->
   <div class="flex items-center gap-3 flex-wrap">
 
-    <!-- Cliente selector -->
     <select [value]="selectedClienteId()"
             (change)="onClienteChange(getSelectValue($event))"
             class="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200
@@ -84,15 +81,13 @@
                 focus:ring-2 focus:ring-primary/20 focus:border-primary
                 focus:outline-none text-slate-900 dark:text-slate-100
                 min-w-[200px]">
-    @for (c of clientes(); track c.id) {
+      @for (c of clientes(); track c.id) {
         <option [value]="c.id">{{ c.nombre }}</option>
-    }
+      }
     </select>
 
-    <!-- Filter -->
     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-      @for (f of [['todas','Todas'],['pendientes','Pendientes'],
-                  ['entregadas','Entregadas']]; track f[0]) {
+      @for (f of [['todas','Todas'],['pendientes','Pendientes'],['entregadas','Entregadas']]; track f[0]) {
         <button (click)="onFilterChange(f[0])"
                 class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
                 [class.bg-white]="filterEntregada() === f[0]"
@@ -100,12 +95,11 @@
                 [class.shadow-sm]="filterEntregada() === f[0]"
                 [class.text-slate-900]="filterEntregada() === f[0]"
                 [class.text-slate-500]="filterEntregada() !== f[0]">
-        {{ f[1] }}
+          {{ f[1] }}
         </button>
       }
     </div>
 
-    <!-- View toggle -->
     <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg ml-auto">
       <button (click)="viewMode.set('grid')"
               class="p-1.5 rounded-md transition-all"
@@ -127,16 +121,12 @@
       </button>
     </div>
 
-    <!-- Select all -->
     @if (filtered().length > 0) {
-      <button (click)="selectedIds().size === filtered().length
-                       ? clearSelection() : selectAll()"
+      <button (click)="selectedIds().size === filtered().length ? clearSelection() : selectAll()"
               class="text-xs font-semibold text-primary hover:underline">
-        {{ selectedIds().size === filtered().length
-           ? 'Deseleccionar todo' : 'Seleccionar todo' }}
+        {{ selectedIds().size === filtered().length ? 'Deseleccionar todo' : 'Seleccionar todo' }}
       </button>
     }
-
   </div>
 
   <!-- Content -->
@@ -147,13 +137,12 @@
     </div>
   } @else if (filtered().length === 0) {
     <div class="flex flex-col items-center justify-center py-20 gap-3">
-      <span class="material-symbols-outlined text-5xl text-slate-300
-                   dark:text-slate-600">photo_library</span>
+      <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
+        photo_library
+      </span>
       <p class="text-slate-500 font-medium">No hay fotos</p>
       <p class="text-slate-400 text-sm">
-        {{ clientes().length === 0
-           ? 'Crea un cliente primero'
-           : 'Sube fotos para este cliente' }}
+        {{ clientes().length === 0 ? 'Crea un cliente primero' : 'Sube fotos para este cliente' }}
       </p>
     </div>
 
@@ -163,52 +152,79 @@
       @for (foto of filtered(); track foto.id) {
         <div class="group relative bg-white dark:bg-slate-900 rounded-xl
                     border border-slate-200 dark:border-slate-800 overflow-hidden
-                    cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
+                    transition-all hover:shadow-md hover:border-primary/30"
              [class.ring-2]="isSelected(foto.id)"
-             [class.ring-primary]="isSelected(foto.id)"
-             (click)="toggleSelect(foto.id)">
+             [class.ring-primary]="isSelected(foto.id)">
 
-          <!-- Thumbnail -->
-          <div class="aspect-square bg-slate-100 dark:bg-slate-800 relative">
-            <img [src]="foto.urlCloudinary"
-                 [alt]="foto.titulo"
-                 class="w-full h-full object-cover"
-                 loading="lazy"
+          <!-- Thumbnail (click selects) -->
+          <div class="aspect-square bg-slate-100 dark:bg-slate-800 relative cursor-pointer"
+               (click)="toggleSelect(foto.id)">
+            <img [src]="foto.urlCloudinary" [alt]="foto.titulo"
+                 class="w-full h-full object-cover" loading="lazy"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e2e8f0%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2214%22%3ENo img%3C/text%3E%3C/svg%3E'"/>
 
-            <!-- Overlay check -->
             @if (isSelected(foto.id)) {
-              <div class="absolute inset-0 bg-primary/20 flex items-center
-                          justify-center">
-                <span class="material-symbols-outlined text-white text-3xl
-                             drop-shadow-lg">check_circle</span>
+              <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-3xl drop-shadow-lg">
+                  check_circle
+                </span>
               </div>
             }
 
-            <!-- Entregada badge -->
             @if (foto.entregada) {
               <span class="absolute top-2 left-2 text-[9px] px-1.5 py-0.5
                            rounded bg-green-500 text-white font-bold uppercase">
                 Entregada
               </span>
             }
+
+            <!-- Opciones badge -->
+            @if (foto.opcionesImpresion.length > 0) {
+              <span class="absolute top-2 right-2 text-[9px] px-1.5 py-0.5
+                           rounded bg-primary text-white font-bold">
+                {{ totalOpcionesImpresion(foto) }} imp.
+              </span>
+            }
           </div>
 
-          <!-- Info -->
+          <!-- Info + action -->
           <div class="p-2">
-            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300
-                       truncate">
+            <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
               {{ foto.titulo || foto.publicId }}
             </p>
             <p class="text-[10px] text-slate-400 mt-0.5">
               {{ formatSize(foto.tamanioBytes) }} · {{ formatDate(foto.fechaSubida) }}
             </p>
-          </div>
 
+            <!-- Opciones de impresión -->
+            @if (foto.opcionesImpresion.length > 0) {
+              <div class="mt-1.5 space-y-0.5">
+                @for (op of foto.opcionesImpresion; track op.subCategoriaId) {
+                  <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-slate-500 truncate">
+                      {{ op.nombreSubCategoria || op.tamanio || op.tipoAcabado }}
+                      × {{ op.cantidad }}
+                    </span>
+                    <button (click)="eliminarOpcion(foto, op.subCategoriaId)"
+                            class="p-0.5 text-slate-300 hover:text-red-500 transition-colors">
+                      <span class="material-symbols-outlined text-[12px]">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <button (click)="openOpcionModal(foto)"
+                    class="mt-2 w-full flex items-center justify-center gap-1
+                           text-[10px] font-semibold text-primary hover:bg-primary/10
+                           rounded-md py-1 transition-colors">
+              <span class="material-symbols-outlined text-[12px]">add</span>
+              Agregar impresión
+            </button>
+          </div>
         </div>
       }
 
-      <!-- Add media placeholder -->
       <label class="aspect-square flex flex-col items-center justify-center
                     rounded-xl border-2 border-dashed border-slate-300
                     dark:border-slate-700 cursor-pointer hover:border-primary/50
@@ -229,21 +245,20 @@
       <div class="divide-y divide-slate-100 dark:divide-slate-800">
         @for (foto of filtered(); track foto.id) {
           <div class="flex items-center gap-4 px-5 py-3 hover:bg-slate-50
-                      dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
-               (click)="toggleSelect(foto.id)"
+                      dark:hover:bg-slate-800/30 transition-colors"
                [class.bg-primary/5]="isSelected(foto.id)">
 
             <input type="checkbox" [checked]="isSelected(foto.id)"
-                   class="rounded text-primary focus:ring-primary"
-                   (click)="$event.stopPropagation()"/>
+                   (change)="toggleSelect(foto.id)"
+                   class="rounded text-primary focus:ring-primary cursor-pointer"/>
 
             <img [src]="foto.urlCloudinary" [alt]="foto.titulo"
                  class="w-12 h-12 rounded-lg object-cover bg-slate-100
-                        dark:bg-slate-800 flex-shrink-0"/>
+                        dark:bg-slate-800 flex-shrink-0 cursor-pointer"
+                 (click)="toggleSelect(foto.id)"/>
 
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-800
-                         dark:text-slate-200 truncate">
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                 {{ foto.titulo || foto.publicId }}
               </p>
               <p class="text-xs text-slate-400">
@@ -251,20 +266,38 @@
                 {{ formatSize(foto.tamanioBytes) }} ·
                 {{ formatDate(foto.fechaSubida) }}
               </p>
+              @if (foto.opcionesImpresion.length > 0) {
+                <div class="flex flex-wrap gap-1 mt-1">
+                  @for (op of foto.opcionesImpresion; track op.subCategoriaId) {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded
+                                 bg-primary/10 text-primary text-[10px] font-semibold">
+                      {{ op.nombreSubCategoria || op.tamanio }} × {{ op.cantidad }}
+                      <button (click)="eliminarOpcion(foto, op.subCategoriaId)"
+                              class="hover:text-red-500 transition-colors">
+                        <span class="material-symbols-outlined text-[10px]">close</span>
+                      </button>
+                    </span>
+                  }
+                </div>
+              }
             </div>
 
+            <button (click)="openOpcionModal(foto)"
+                    class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10
+                           rounded-lg transition-colors flex-shrink-0"
+                    title="Agregar opción de impresión">
+              <span class="material-symbols-outlined text-[18px]">print</span>
+            </button>
+
             @if (foto.entregada) {
-              <span class="text-xs px-2 py-1 rounded-full bg-green-100
-                           text-green-700 font-bold">
+              <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-bold">
                 Entregada
               </span>
             } @else {
-              <span class="text-xs px-2 py-1 rounded-full bg-yellow-100
-                           text-yellow-700 font-bold">
+              <span class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-bold">
                 Pendiente
               </span>
             }
-
           </div>
         }
       </div>
@@ -272,3 +305,165 @@
   }
 
 </div>
+
+<!-- Modal: Opción de Impresión -->
+@if (showOpcionModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeOpcionModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-md border border-slate-200 dark:border-slate-800"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="font-bold text-slate-900 dark:text-white">Opción de Impresión</h3>
+          @if (selectedFotografia()) {
+            <p class="text-xs text-slate-400 mt-0.5">{{ selectedFotografia()!.titulo }}</p>
+          }
+        </div>
+        <button (click)="closeOpcionModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4">
+
+        <!-- Servicio del catálogo -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            Servicio del catálogo (opcional)
+          </label>
+          <select [(ngModel)]="opcionForm.servicioId" (ngModelChange)="onServicioOpcionChange()"
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                         dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                         text-sm focus:ring-2 focus:ring-primary/20
+                         focus:outline-none text-slate-900 dark:text-slate-100">
+            <option value="">Seleccionar servicio...</option>
+            @for (s of serviciosDeCategoria(); track s.id) {
+              <option [value]="s.id">{{ s.nombre }} — {{ formatCurrency(s.precioBase) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Categoría -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Categoría</label>
+            <select [(ngModel)]="opcionForm.categoriaId"
+                    (ngModelChange)="opcionForm.subCategoriaId = ''"
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none text-slate-900 dark:text-slate-100">
+              <option value="">Seleccionar...</option>
+              @for (cat of categorias(); track cat.id) {
+                <option [value]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Sub-categoría (tamaño/tipo) -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Tamaño / Tipo
+            </label>
+            <select [(ngModel)]="opcionForm.subCategoriaId"
+                    [disabled]="!opcionForm.categoriaId"
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none text-slate-900 dark:text-slate-100
+                           disabled:opacity-50">
+              <option value="">Seleccionar...</option>
+              @for (sub of subCategoriasDeForm(); track sub.id) {
+                <option [value]="sub.id">{{ sub.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Tamaño manual (si no hay sub-categoría) -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Tamaño (manual)
+            </label>
+            <input type="text" [(ngModel)]="opcionForm.tamanio"
+                   placeholder="Ej: 8x10, 20x30cm"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <!-- Tipo acabado manual -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Tipo acabado
+            </label>
+            <input type="text" [(ngModel)]="opcionForm.tipoAcabado"
+                   placeholder="Ej: Sin marco, Cañuela"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Cantidad *</label>
+            <input type="number" [(ngModel)]="opcionForm.cantidad" min="1"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <!-- Precio -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Precio unit.</label>
+            <input type="number" [(ngModel)]="opcionForm.precioUnitario" min="0"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+        </div>
+
+        <!-- Total preview -->
+        @if (opcionForm.cantidad > 0 && opcionForm.precioUnitario > 0) {
+          <div class="flex justify-between text-sm font-semibold
+                      text-slate-700 dark:text-slate-300 bg-slate-50
+                      dark:bg-slate-800 px-3 py-2 rounded-lg">
+            <span>Total</span>
+            <span class="text-primary">
+              {{ formatCurrency(opcionForm.cantidad * opcionForm.precioUnitario) }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800">
+        <button (click)="closeOpcionModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="saveOpcion()" [disabled]="savingOpcion()"
+                class="flex items-center gap-2 px-5 py-2 bg-primary
+                       hover:bg-primary/90 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (savingOpcion()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          <span class="material-symbols-outlined text-[16px]">print</span>
+          Agregar
+        </button>
+      </div>
+    </div>
+  </div>
+}

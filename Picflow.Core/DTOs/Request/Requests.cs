@@ -11,6 +11,8 @@ public record CreateUsuarioRequest(
     RolUsuario Rol
 );
 
+public record UpdateRolUsuarioRequest(RolUsuario Rol);
+
 public record CreateClienteRequest(
     string Nombre,
     string Telefono,
@@ -56,18 +58,32 @@ public record UploadFotografiaRequest(
     string Descripcion
 );
 
+public record AgregarOpcionImpresionRequest(
+    string CategoriaId,
+    string SubCategoriaId,
+    string ServicioId,
+    string Tamanio,
+    string TipoAcabado,
+    int Cantidad,
+    decimal PrecioUnitario
+);
+
 public record CreateFacturaRequest(
     string ClienteId,
     string CitaId,
     List<ItemFacturaRequest> Items,
     decimal Impuesto,
-    string Notas
+    string Notas,
+    bool AplicarSaldoFavor = false,
+    string? PreOrdenId = null
 );
 
 public record ItemFacturaRequest(
     string Descripcion,
     int Cantidad,
-    decimal PrecioUnitario
+    decimal PrecioUnitario,
+    string ServicioId = "",
+    string CodigoBarras = ""
 );
 
 public record CreatePagoRequest(
@@ -75,4 +91,64 @@ public record CreatePagoRequest(
     MetodoPago Metodo,
     string Referencia,
     string Notas
+);
+
+// Categorias
+public record CreateCategoriaRequest(
+    string Nombre,
+    string Descripcion,
+    List<CreateSubCategoriaRequest> SubCategorias
+);
+
+public record CreateSubCategoriaRequest(
+    string Nombre,
+    TipoSubCategoria Tipo
+);
+
+public record UpdateCategoriaRequest(
+    string Nombre,
+    string Descripcion
+);
+
+// Servicios
+public record CreateServicioRequest(
+    string Nombre,
+    string Descripcion,
+    string CategoriaId,
+    string SubCategoriaId,
+    decimal PrecioBase,
+    string CodigoBarras
+);
+
+public record UpdateServicioRequest(
+    string Nombre,
+    string Descripcion,
+    string CategoriaId,
+    string SubCategoriaId,
+    decimal PrecioBase,
+    string CodigoBarras
+);
+
+// PreOrden
+public record CreatePreOrdenRequest(
+    string ClienteId,
+    string CitaId,
+    List<ItemPreOrdenRequest> Items,
+    decimal Impuesto,
+    string Notas
+);
+
+public record ItemPreOrdenRequest(
+    string ServicioId,
+    string Descripcion,
+    string CodigoBarras,
+    int Cantidad,
+    decimal PrecioUnitario,
+    AgregarOpcionImpresionRequest? OpcionImpresion = null
+);
+
+public record ConvertirPreOrdenRequest(
+    decimal Impuesto,
+    string Notas,
+    bool AplicarSaldoFavor = false
 );

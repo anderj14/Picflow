@@ -13,4 +13,18 @@ public class Fotografia : BaseEntity
     public bool Entregada { get; set; } = false;
     public long TamanioBytes { get; set; }
     public string Formato { get; set; } = string.Empty;
+    public List<OpcionImpresion> OpcionesImpresion { get; set; } = [];
+}
+
+public class OpcionImpresion
+{
+    public string CategoriaId { get; set; } = string.Empty;
+    public string NombreCategoria { get; set; } = string.Empty;
+    public string SubCategoriaId { get; set; } = string.Empty;
+    public string NombreSubCategoria { get; set; } = string.Empty;
+    public string ServicioId { get; set; } = string.Empty;
+    public string Tamanio { get; set; } = string.Empty;
+    public string TipoAcabado { get; set; } = string.Empty;
+    public int Cantidad { get; set; } = 1;
+    public decimal PrecioUnitario { get; set; }
 }

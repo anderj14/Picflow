@@ -7,6 +7,7 @@ export interface Cliente {
   direccion: string;
   notas: string;
   fechaRegistro: string;
+  saldoFavor: number;
 }
 
 export interface CreateClienteRequest {

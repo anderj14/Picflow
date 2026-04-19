@@ -1,3 +1,15 @@
+export interface OpcionImpresion {
+  categoriaId: string;
+  nombreCategoria: string;
+  subCategoriaId: string;
+  nombreSubCategoria: string;
+  servicioId: string;
+  tamanio: string;
+  tipoAcabado: string;
+  cantidad: number;
+  precioUnitario: number;
+}
+
 export interface Fotografia {
   id: string;
   citaId: string;
@@ -10,4 +22,5 @@ export interface Fotografia {
   tamanioBytes: number;
   formato: string;
   fechaSubida: string;
+  opcionesImpresion: OpcionImpresion[];
 }

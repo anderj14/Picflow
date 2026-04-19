@@ -14,13 +14,17 @@ public class Factura : BaseEntity
     public decimal Impuesto { get; set; }
     public decimal Total { get; set; }
     public decimal TotalPagado { get; set; }
+    public decimal SaldoFavorAplicado { get; set; }
     public EstadoFactura Estado { get; set; } = EstadoFactura.Pendiente;
+    public string? PreOrdenId { get; set; }
     public string Notas { get; set; } = string.Empty;
 }
 
 public class ItemFactura
 {
+    public string ServicioId { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
+    public string CodigoBarras { get; set; } = string.Empty;
     public int Cantidad { get; set; } = 1;
     public decimal PrecioUnitario { get; set; }
     public decimal Subtotal => Cantidad * PrecioUnitario;

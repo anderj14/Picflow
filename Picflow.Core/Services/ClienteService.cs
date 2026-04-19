@@ -76,5 +76,5 @@ public class ClienteService(IClienteRepository repo) : IClienteService
 
     private static ClienteResponse MapToResponse(Cliente c) =>
         new(c.Id, c.Nombre, c.Telefono, c.Email, c.Cedula,
-            c.Direccion, c.Notas, c.CreadoEn);
+            c.Direccion, c.Notas, c.CreadoEn, c.SaldoFavor);
 }

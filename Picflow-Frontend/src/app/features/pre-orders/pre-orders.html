@@ -1,0 +1,407 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white">Pre-Órdenes</h2>
+      <p class="text-slate-500 text-sm mt-0.5">Gestiona órdenes antes de generar la factura</p>
+    </div>
+    <button (click)="openCreate()"
+            class="flex items-center gap-2 bg-primary hover:bg-primary/90
+                   text-white px-5 py-2.5 rounded-lg text-sm font-bold
+                   shadow-lg shadow-primary/20 transition-all">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Nueva Pre-Orden
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative flex-1 min-w-[200px] max-w-sm">
+      <span class="material-symbols-outlined absolute left-3 top-1/2
+                   -translate-y-1/2 text-slate-400 text-lg">search</span>
+      <input type="text" [(ngModel)]="searchQuery"
+             placeholder="Buscar por cliente o número..."
+             class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border
+                    border-slate-200 dark:border-slate-800 rounded-lg text-sm
+                    focus:ring-2 focus:ring-primary/20 focus:border-primary
+                    focus:outline-none text-slate-900 dark:text-slate-100"/>
+    </div>
+    <div class="flex items-center gap-2">
+      @for (estado of estadoOptions; track estado) {
+        <button (click)="filterEstado.set(estado)"
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                [class.bg-primary]="filterEstado() === estado"
+                [class.text-white]="filterEstado() === estado"
+                [class.bg-slate-100]="filterEstado() !== estado"
+                [class.dark:bg-slate-800]="filterEstado() !== estado"
+                [class.text-slate-600]="filterEstado() !== estado"
+                [class.dark:text-slate-400]="filterEstado() !== estado">
+          {{ estado }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white dark:bg-slate-900 rounded-xl border
+              border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+    @if (loading()) {
+      <div class="p-12 flex items-center justify-center gap-3 text-slate-400">
+        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+        Cargando pre-órdenes...
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="p-12 text-center">
+        <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
+          receipt_long
+        </span>
+        <p class="text-slate-500 mt-3 font-medium">No hay pre-órdenes</p>
+        <p class="text-slate-400 text-sm">
+          {{ searchQuery() ? 'Intenta con otro término' : 'Crea tu primera pre-orden' }}
+        </p>
+      </div>
+    } @else {
+
+      <!-- Header row -->
+      <div class="grid grid-cols-12 px-6 py-3 bg-slate-50 dark:bg-slate-800/50
+                  border-b border-slate-200 dark:border-slate-800">
+        <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">N° Orden</div>
+        <div class="col-span-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</div>
+        <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha</div>
+        <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Total</div>
+        <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</div>
+        <div class="col-span-1 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Acc.</div>
+      </div>
+
+      @for (po of filtered(); track po.id) {
+        <div class="grid grid-cols-12 px-6 py-4 border-b border-slate-100
+                    dark:border-slate-800 last:border-0 hover:bg-slate-50
+                    dark:hover:bg-slate-800/30 transition-colors items-center">
+
+          <div class="col-span-2">
+            <span class="text-sm font-bold text-primary">{{ po.numeroPreOrden }}</span>
+            <p class="text-xs text-slate-400">{{ po.items.length }} ítem(s)</p>
+          </div>
+
+          <div class="col-span-3 flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center
+                        justify-center text-primary text-[10px] font-bold flex-shrink-0">
+              {{ getInitials(po.nombreCliente) }}
+            </div>
+            <span class="text-sm text-slate-700 dark:text-slate-300 truncate">
+              {{ po.nombreCliente }}
+            </span>
+          </div>
+
+          <div class="col-span-2 text-sm text-slate-500">
+            {{ formatDate(po.creadoEn) }}
+          </div>
+
+          <div class="col-span-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+            {{ formatCurrency(po.total) }}
+          </div>
+
+          <div class="col-span-2">
+            <span class="text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wider"
+                  [class]="getEstadoClass(po.estado)">
+              {{ po.estado }}
+            </span>
+          </div>
+
+          <div class="col-span-1 flex items-center justify-end gap-1">
+            @if (po.estado === 'Borrador') {
+              <button (click)="confirmar(po.id)"
+                      class="p-1.5 text-slate-400 hover:text-blue-600
+                             hover:bg-blue-50 dark:hover:bg-blue-900/20
+                             rounded-lg transition-colors"
+                      title="Confirmar">
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              </button>
+            }
+            @if (po.estado === 'Confirmada') {
+              <button (click)="openConvertir(po)"
+                      class="p-1.5 text-slate-400 hover:text-green-600
+                             hover:bg-green-50 dark:hover:bg-green-900/20
+                             rounded-lg transition-colors"
+                      title="Convertir a factura">
+                <span class="material-symbols-outlined text-[18px]">receipt</span>
+              </button>
+            }
+            @if (po.estado === 'Borrador' || po.estado === 'Confirmada') {
+              <button (click)="cancelar(po.id)"
+                      class="p-1.5 text-slate-400 hover:text-red-500
+                             hover:bg-red-50 dark:hover:bg-red-900/20
+                             rounded-lg transition-colors"
+                      title="Cancelar">
+                <span class="material-symbols-outlined text-[18px]">cancel</span>
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+    }
+  </div>
+
+</div>
+
+<!-- Modal: Nueva Pre-Orden -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-2xl border border-slate-200 dark:border-slate-800
+                max-h-[90vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <h3 class="font-bold text-slate-900 dark:text-white">Nueva Pre-Orden</h3>
+        <button (click)="closeModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+
+        @if (errorMsg()) {
+          <div class="flex items-center gap-2 p-3 rounded-lg bg-red-50
+                      dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+            <span class="material-symbols-outlined text-[16px]">error</span>
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Cliente *</label>
+          <select [(ngModel)]="form.clienteId"
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                         dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                         text-sm focus:ring-2 focus:ring-primary/20
+                         focus:outline-none text-slate-900 dark:text-slate-100">
+            <option value="">Selecciona un cliente</option>
+            @for (c of clientes(); track c.id) {
+              <option [value]="c.id">{{ c.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Items -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Ítems *
+            </label>
+            <button (click)="addItem()"
+                    class="flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              Agregar ítem
+            </button>
+          </div>
+
+          @for (item of items; track $index) {
+            <div class="space-y-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <!-- Servicio selector -->
+              <select [(ngModel)]="item.servicioId" (ngModelChange)="onServicioChange(item)"
+                      class="w-full px-3 py-2 rounded-lg border border-slate-200
+                             dark:border-slate-700 bg-white dark:bg-slate-800
+                             text-sm focus:ring-2 focus:ring-primary/20
+                             focus:outline-none text-slate-900 dark:text-slate-100">
+                <option value="">Seleccionar servicio del catálogo (opcional)</option>
+                @for (s of servicios(); track s.id) {
+                  <option [value]="s.id">{{ s.nombre }} — {{ formatCurrency(s.precioBase) }}</option>
+                }
+              </select>
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <div class="col-span-5">
+                  <input type="text" [(ngModel)]="item.descripcion"
+                         placeholder="Descripción"
+                         class="w-full px-3 py-2 rounded-lg border border-slate-200
+                                dark:border-slate-700 bg-white dark:bg-slate-800
+                                text-sm focus:ring-2 focus:ring-primary/20
+                                focus:outline-none text-slate-900 dark:text-slate-100"/>
+                </div>
+                <div class="col-span-2">
+                  <input type="number" [(ngModel)]="item.cantidad" min="1"
+                         placeholder="Cant."
+                         class="w-full px-3 py-2 rounded-lg border border-slate-200
+                                dark:border-slate-700 bg-white dark:bg-slate-800
+                                text-sm focus:ring-2 focus:ring-primary/20
+                                focus:outline-none text-slate-900 dark:text-slate-100"/>
+                </div>
+                <div class="col-span-3">
+                  <input type="number" [(ngModel)]="item.precioUnitario" min="0"
+                         placeholder="Precio"
+                         class="w-full px-3 py-2 rounded-lg border border-slate-200
+                                dark:border-slate-700 bg-white dark:bg-slate-800
+                                text-sm focus:ring-2 focus:ring-primary/20
+                                focus:outline-none text-slate-900 dark:text-slate-100"/>
+                </div>
+                <div class="col-span-2 flex items-center justify-between">
+                  <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    {{ formatCurrency(item.cantidad * item.precioUnitario) }}
+                  </span>
+                  @if (items.length > 1) {
+                    <button (click)="removeItem($index)"
+                            class="p-1 text-slate-400 hover:text-red-500 rounded transition-colors">
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Totales -->
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">ITBIS (%)</label>
+            <input type="number" [(ngModel)]="form.impuesto" min="0" max="100"
+                   class="w-20 px-3 py-1.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm text-right focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+          <div class="flex justify-between text-sm text-slate-500">
+            <span>Subtotal</span><span>{{ formatCurrency(subtotal()) }}</span>
+          </div>
+          <div class="flex justify-between text-base font-bold
+                      text-slate-900 dark:text-white border-t
+                      border-slate-200 dark:border-slate-800 pt-2">
+            <span>Total estimado</span>
+            <span class="text-primary">{{ formatCurrency(total()) }}</span>
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Notas</label>
+          <textarea [(ngModel)]="form.notas" rows="2"
+                    placeholder="Notas opcionales..."
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none resize-none
+                           text-slate-900 dark:text-slate-100"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <button (click)="closeModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="save()" [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2 bg-primary
+                       hover:bg-primary/90 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          Crear Pre-Orden
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Convertir a Factura -->
+@if (showConvertirModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeConvertirModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-md border border-slate-200 dark:border-slate-800"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800">
+        <h3 class="font-bold text-slate-900 dark:text-white">Convertir a Factura</h3>
+        <button (click)="closeConvertirModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4">
+
+        @if (selectedPreOrden()) {
+          <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm">
+            <p class="font-semibold text-slate-700 dark:text-slate-300">
+              {{ selectedPreOrden()!.numeroPreOrden }} — {{ selectedPreOrden()!.nombreCliente }}
+            </p>
+            <p class="text-slate-500 mt-1">Total: <span class="font-bold">
+              {{ formatCurrency(selectedPreOrden()!.total) }}
+            </span></p>
+          </div>
+        }
+
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">ITBIS (%)</label>
+          <input type="number" [(ngModel)]="convertirForm.impuesto" min="0" max="100"
+                 class="w-20 px-3 py-1.5 rounded-lg border border-slate-200
+                        dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                        text-sm text-right focus:ring-2 focus:ring-primary/20
+                        focus:outline-none text-slate-900 dark:text-slate-100"/>
+        </div>
+
+        <!-- Saldo a favor -->
+        <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200
+                      dark:border-slate-700 cursor-pointer hover:bg-slate-50
+                      dark:hover:bg-slate-800 transition-colors">
+          <input type="checkbox" [(ngModel)]="convertirForm.aplicarSaldoFavor"
+                 class="w-4 h-4 accent-primary rounded"/>
+          <div>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Aplicar saldo a favor
+            </p>
+            <p class="text-xs text-slate-400">
+              Si el cliente tiene crédito disponible, se descuenta del total
+            </p>
+          </div>
+        </label>
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Notas</label>
+          <textarea [(ngModel)]="convertirForm.notas" rows="2"
+                    placeholder="Notas para la factura..."
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none resize-none
+                           text-slate-900 dark:text-slate-100"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800">
+        <button (click)="closeConvertirModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="convertirAFactura()" [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2 bg-green-600
+                       hover:bg-green-700 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          <span class="material-symbols-outlined text-[16px]">receipt</span>
+          Generar Factura
+        </button>
+      </div>
+    </div>
+  </div>
+}

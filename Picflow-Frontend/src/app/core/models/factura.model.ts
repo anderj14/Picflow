@@ -2,7 +2,9 @@ export type EstadoFactura = 'Pendiente' | 'PagoParcial' | 'Pagada' | 'Anulada';
 export type MetodoPago = 'Efectivo' | 'Tarjeta' | 'Transferencia' | 'Otro';
 
 export interface ItemFactura {
+  servicioId: string;
   descripcion: string;
+  codigoBarras: string;
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
@@ -18,6 +20,17 @@ export interface Pago {
   notas: string;
 }
 
+export interface PagoDetalle extends Pago {
+  numeroFactura: string;
+}
+
+export interface HistorialPagos {
+  clienteId: string;
+  nombreCliente: string;
+  saldoFavor: number;
+  pagos: PagoDetalle[];
+}
+
 export interface Factura {
   id: string;
   numeroFactura: string;
@@ -31,7 +44,9 @@ export interface Factura {
   total: number;
   totalPagado: number;
   saldoPendiente: number;
+  saldoFavorAplicado: number;
   estado: EstadoFactura;
+  preOrdenId?: string;
   notas: string;
   pagos: Pago[];
 }

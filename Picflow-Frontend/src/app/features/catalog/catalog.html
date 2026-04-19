@@ -1,0 +1,553 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h2 class="text-2xl font-black text-slate-900 dark:text-white">Catálogo</h2>
+      <p class="text-slate-500 text-sm mt-0.5">Gestiona categorías, sub-categorías y servicios</p>
+    </div>
+    <div class="flex gap-2">
+      @if (activeTab() === 'categorias') {
+        <button (click)="openCreateCategoria()"
+                class="flex items-center gap-2 bg-primary hover:bg-primary/90
+                       text-white px-5 py-2.5 rounded-lg text-sm font-bold
+                       shadow-lg shadow-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Nueva Categoría
+        </button>
+      } @else {
+        <button (click)="openCreateServicio()"
+                class="flex items-center gap-2 bg-primary hover:bg-primary/90
+                       text-white px-5 py-2.5 rounded-lg text-sm font-bold
+                       shadow-lg shadow-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Nuevo Servicio
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 w-fit">
+    <button (click)="activeTab.set('categorias')"
+            class="px-5 py-2 text-sm font-semibold rounded-lg transition-all"
+            [class.bg-white]="activeTab() === 'categorias'"
+            [class.dark:bg-slate-900]="activeTab() === 'categorias'"
+            [class.text-primary]="activeTab() === 'categorias'"
+            [class.shadow-sm]="activeTab() === 'categorias'"
+            [class.text-slate-500]="activeTab() !== 'categorias'">
+      <span class="material-symbols-outlined text-[16px] align-middle mr-1">category</span>
+      Categorías
+    </button>
+    <button (click)="activeTab.set('servicios')"
+            class="px-5 py-2 text-sm font-semibold rounded-lg transition-all"
+            [class.bg-white]="activeTab() === 'servicios'"
+            [class.dark:bg-slate-900]="activeTab() === 'servicios'"
+            [class.text-primary]="activeTab() === 'servicios'"
+            [class.shadow-sm]="activeTab() === 'servicios'"
+            [class.text-slate-500]="activeTab() !== 'servicios'">
+      <span class="material-symbols-outlined text-[16px] align-middle mr-1">sell</span>
+      Servicios
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="relative max-w-sm">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2
+                 text-slate-400 text-lg">search</span>
+    <input type="text" [(ngModel)]="searchQuery"
+           placeholder="Buscar..."
+           class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border
+                  border-slate-200 dark:border-slate-800 rounded-lg text-sm
+                  focus:ring-2 focus:ring-primary/20 focus:border-primary
+                  focus:outline-none text-slate-900 dark:text-slate-100"/>
+  </div>
+
+  <!-- Tab: Categorías -->
+  @if (activeTab() === 'categorias') {
+    @if (loading()) {
+      <div class="p-12 flex items-center justify-center gap-3 text-slate-400">
+        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+        Cargando categorías...
+      </div>
+    } @else if (filteredCategorias().length === 0) {
+      <div class="p-12 text-center bg-white dark:bg-slate-900 rounded-xl border
+                  border-slate-200 dark:border-slate-800">
+        <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
+          category
+        </span>
+        <p class="text-slate-500 mt-3 font-medium">No hay categorías</p>
+        <p class="text-slate-400 text-sm">Crea tu primera categoría para organizar los servicios</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        @for (cat of filteredCategorias(); track cat.id) {
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200
+                      dark:border-slate-800 shadow-sm p-5 space-y-4">
+
+            <!-- Cat header -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center
+                            justify-center text-primary flex-shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">category</span>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800 dark:text-white text-sm">{{ cat.nombre }}</p>
+                  <p class="text-xs text-slate-400">{{ cat.descripcion || 'Sin descripción' }}</p>
+                </div>
+              </div>
+              <div class="flex gap-1">
+                <button (click)="openAddSubCategoria(cat)"
+                        class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10
+                               rounded-lg transition-colors"
+                        title="Agregar sub-categoría">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                </button>
+                <button (click)="deleteCategoria(cat.id)"
+                        class="p-1.5 text-slate-400 hover:text-red-500
+                               hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg
+                               transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sub-categorías -->
+            @if (cat.subCategorias.length > 0) {
+              <div class="space-y-1.5">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Sub-categorías ({{ cat.subCategorias.length }})
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (sub of cat.subCategorias; track sub.id) {
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs
+                                 font-semibold"
+                          [class.bg-blue-100]="sub.tipo === 'Tamanio'"
+                          [class.text-blue-700]="sub.tipo === 'Tamanio'"
+                          [class.dark:bg-blue-900/30]="sub.tipo === 'Tamanio'"
+                          [class.dark:text-blue-400]="sub.tipo === 'Tamanio'"
+                          [class.bg-purple-100]="sub.tipo === 'TipoAcabado'"
+                          [class.text-purple-700]="sub.tipo === 'TipoAcabado'"
+                          [class.dark:bg-purple-900/30]="sub.tipo === 'TipoAcabado'"
+                          [class.dark:text-purple-400]="sub.tipo === 'TipoAcabado'">
+                      <span class="material-symbols-outlined text-[12px]">
+                        {{ sub.tipo === 'Tamanio' ? 'straighten' : 'style' }}
+                      </span>
+                      {{ sub.nombre }}
+                    </span>
+                  }
+                </div>
+              </div>
+            } @else {
+              <p class="text-xs text-slate-400 italic">Sin sub-categorías</p>
+            }
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Tab: Servicios -->
+  @if (activeTab() === 'servicios') {
+    <div class="bg-white dark:bg-slate-900 rounded-xl border
+                border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+      @if (loading()) {
+        <div class="p-12 flex items-center justify-center gap-3 text-slate-400">
+          <span class="material-symbols-outlined animate-spin">progress_activity</span>
+          Cargando servicios...
+        </div>
+      } @else if (filteredServicios().length === 0) {
+        <div class="p-12 text-center">
+          <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">
+            sell
+          </span>
+          <p class="text-slate-500 mt-3 font-medium">No hay servicios</p>
+          <p class="text-slate-400 text-sm">Crea servicios dentro de tus categorías</p>
+        </div>
+      } @else {
+
+        <!-- Header -->
+        <div class="grid grid-cols-12 px-6 py-3 bg-slate-50 dark:bg-slate-800/50
+                    border-b border-slate-200 dark:border-slate-800">
+          <div class="col-span-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Servicio</div>
+          <div class="col-span-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Categoría</div>
+          <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Sub-categoría</div>
+          <div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Precio</div>
+          <div class="col-span-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Barcode</div>
+          <div class="col-span-1 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Acc.</div>
+        </div>
+
+        @for (s of filteredServicios(); track s.id) {
+          <div class="grid grid-cols-12 px-6 py-4 border-b border-slate-100
+                      dark:border-slate-800 last:border-0 hover:bg-slate-50
+                      dark:hover:bg-slate-800/30 transition-colors items-center">
+
+            <div class="col-span-3">
+              <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ s.nombre }}</p>
+              <p class="text-xs text-slate-400 truncate">{{ s.descripcion }}</p>
+            </div>
+
+            <div class="col-span-3 text-sm text-slate-600 dark:text-slate-300">
+              {{ s.nombreCategoria }}
+            </div>
+
+            <div class="col-span-2">
+              @if (s.nombreSubCategoria) {
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100
+                             dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium">
+                  {{ s.nombreSubCategoria }}
+                </span>
+              }
+            </div>
+
+            <div class="col-span-2 text-sm font-bold text-primary">
+              {{ formatCurrency(s.precioBase) }}
+            </div>
+
+            <div class="col-span-1">
+              @if (s.codigoBarras) {
+                <span class="text-xs font-mono text-slate-500 dark:text-slate-400">
+                  {{ s.codigoBarras }}
+                </span>
+              }
+            </div>
+
+            <div class="col-span-1 flex items-center justify-end gap-1">
+              <button (click)="openEditServicio(s)"
+                      class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10
+                             rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+              <button (click)="deleteServicio(s.id)"
+                      class="p-1.5 text-slate-400 hover:text-red-500
+                             hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg
+                             transition-colors">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Modal: Nueva Categoría -->
+@if (showCategoriaModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeCategoriaModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-lg border border-slate-200 dark:border-slate-800
+                max-h-[90vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <h3 class="font-bold text-slate-900 dark:text-white">Nueva Categoría</h3>
+        <button (click)="closeCategoriaModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-5 overflow-y-auto flex-1">
+
+        @if (errorMsg()) {
+          <div class="flex items-center gap-2 p-3 rounded-lg bg-red-50
+                      dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+            <span class="material-symbols-outlined text-[16px]">error</span>
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Nombre *</label>
+          <input type="text" [(ngModel)]="categoriaForm.nombre"
+                 placeholder="Ej: Fotografías Impresas"
+                 class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                        dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                        text-sm focus:ring-2 focus:ring-primary/20
+                        focus:outline-none text-slate-900 dark:text-slate-100"/>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Descripción</label>
+          <input type="text" [(ngModel)]="categoriaForm.descripcion"
+                 placeholder="Descripción opcional"
+                 class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                        dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                        text-sm focus:ring-2 focus:ring-primary/20
+                        focus:outline-none text-slate-900 dark:text-slate-100"/>
+        </div>
+
+        <!-- Sub-categorías iniciales -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Sub-categorías
+            </label>
+            <button (click)="addSubCategoriaRow()"
+                    class="flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              Agregar
+            </button>
+          </div>
+          @for (sc of subCategorias; track $index) {
+            <div class="flex items-center gap-2">
+              <input type="text" [(ngModel)]="sc.nombre"
+                     placeholder="Ej: 4x6, Sin marco, Canvas..."
+                     class="flex-1 px-3 py-2 rounded-lg border border-slate-200
+                            dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                            text-sm focus:ring-2 focus:ring-primary/20
+                            focus:outline-none text-slate-900 dark:text-slate-100"/>
+              <select [(ngModel)]="sc.tipo"
+                      class="px-3 py-2 rounded-lg border border-slate-200
+                             dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                             text-sm focus:ring-2 focus:ring-primary/20
+                             focus:outline-none text-slate-900 dark:text-slate-100">
+                <option value="Tamanio">Tamaño</option>
+                <option value="TipoAcabado">Tipo Acabado</option>
+              </select>
+              @if (subCategorias.length > 1) {
+                <button (click)="removeSubCategoriaRow($index)"
+                        class="p-1.5 text-slate-400 hover:text-red-500 rounded transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <button (click)="closeCategoriaModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="saveCategoria()" [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2 bg-primary
+                       hover:bg-primary/90 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          Crear Categoría
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Agregar Sub-categoría -->
+@if (showSubCategoriaModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeSubCategoriaModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-sm border border-slate-200 dark:border-slate-800"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800">
+        <h3 class="font-bold text-slate-900 dark:text-white">
+          Agregar Sub-categoría
+          @if (selectedCategoria()) {
+            <span class="text-slate-400 font-normal"> — {{ selectedCategoria()!.nombre }}</span>
+          }
+        </h3>
+        <button (click)="closeSubCategoriaModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4">
+        @if (errorMsg()) {
+          <div class="flex items-center gap-2 p-3 rounded-lg bg-red-50
+                      dark:bg-red-900/20 text-red-600 text-sm">
+            <span class="material-symbols-outlined text-[16px]">error</span>
+            {{ errorMsg() }}
+          </div>
+        }
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Nombre *</label>
+          <input type="text" [(ngModel)]="subCategoriaForm.nombre"
+                 placeholder="Ej: 8x10, Con marco, Cañuela..."
+                 class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                        dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                        text-sm focus:ring-2 focus:ring-primary/20
+                        focus:outline-none text-slate-900 dark:text-slate-100"/>
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Tipo</label>
+          <select [(ngModel)]="subCategoriaForm.tipo"
+                  class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                         dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                         text-sm focus:ring-2 focus:ring-primary/20
+                         focus:outline-none text-slate-900 dark:text-slate-100">
+            <option value="Tamanio">Tamaño</option>
+            <option value="TipoAcabado">Tipo Acabado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800">
+        <button (click)="closeSubCategoriaModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="saveSubCategoria()" [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2 bg-primary
+                       hover:bg-primary/90 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          Agregar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Servicio -->
+@if (showServicioModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+       (click)="closeServicioModal()">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl
+                w-full max-w-lg border border-slate-200 dark:border-slate-800
+                max-h-[90vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <h3 class="font-bold text-slate-900 dark:text-white">
+          {{ editingServicioId() ? 'Editar Servicio' : 'Nuevo Servicio' }}
+        </h3>
+        <button (click)="closeServicioModal()"
+                class="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+
+        @if (errorMsg()) {
+          <div class="flex items-center gap-2 p-3 rounded-lg bg-red-50
+                      dark:bg-red-900/20 text-red-600 text-sm">
+            <span class="material-symbols-outlined text-[16px]">error</span>
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2 space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Nombre *</label>
+            <input type="text" [(ngModel)]="servicioForm.nombre"
+                   placeholder="Ej: Foto 4x6 sin marco"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <div class="col-span-2 space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Descripción</label>
+            <input type="text" [(ngModel)]="servicioForm.descripcion"
+                   placeholder="Descripción del servicio"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Categoría *</label>
+            <select [(ngModel)]="servicioForm.categoriaId"
+                    (ngModelChange)="servicioForm.subCategoriaId = ''"
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none text-slate-900 dark:text-slate-100">
+              <option value="">Seleccionar...</option>
+              @for (cat of categorias(); track cat.id) {
+                <option [value]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Sub-categoría</label>
+            <select [(ngModel)]="servicioForm.subCategoriaId"
+                    [disabled]="!servicioForm.categoriaId"
+                    class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                           dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                           text-sm focus:ring-2 focus:ring-primary/20
+                           focus:outline-none text-slate-900 dark:text-slate-100
+                           disabled:opacity-50">
+              <option value="">Sin sub-categoría</option>
+              @for (sub of subCategoriasDeCategoria(); track sub.id) {
+                <option [value]="sub.id">{{ sub.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Precio base *</label>
+            <input type="number" [(ngModel)]="servicioForm.precioBase" min="0"
+                   placeholder="0"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Código de barras
+            </label>
+            <input type="text" [(ngModel)]="servicioForm.codigoBarras"
+                   placeholder="SKU o barcode"
+                   class="w-full px-3 py-2.5 rounded-lg border border-slate-200
+                          dark:border-slate-700 bg-slate-50 dark:bg-slate-800
+                          text-sm font-mono focus:ring-2 focus:ring-primary/20
+                          focus:outline-none text-slate-900 dark:text-slate-100"/>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t
+                  border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <button (click)="closeServicioModal()"
+                class="px-4 py-2 text-sm font-semibold text-slate-600
+                       dark:text-slate-400 hover:bg-slate-100
+                       dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button (click)="saveServicio()" [disabled]="saving()"
+                class="flex items-center gap-2 px-5 py-2 bg-primary
+                       hover:bg-primary/90 disabled:opacity-60 text-white
+                       text-sm font-bold rounded-lg transition-all">
+          @if (saving()) {
+            <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+          }
+          {{ editingServicioId() ? 'Guardar' : 'Crear Servicio' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

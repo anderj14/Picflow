@@ -82,12 +82,12 @@ export class Sidebar {
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Clientes', icon: 'group', route: '/clients' },
     { label: 'Citas', icon: 'calendar_today', route: '/appointments' },
+    { label: 'Pre-Órdenes', icon: 'receipt_long', route: '/pre-orders' },
     { label: 'Facturación', icon: 'payments', route: '/invoices' },
     { label: 'Activos', icon: 'collections', route: '/assets' },
-    {
-      label: 'Reportes', icon: 'bar_chart', route: '/reports',
-      roles: ['Administrador']
-    },
+    { label: 'Catálogo', icon: 'sell', route: '/catalog', roles: ['Administrador'] },
+    { label: 'Reportes', icon: 'bar_chart', route: '/reports', roles: ['Administrador'] },
+    { label: 'Usuarios', icon: 'manage_accounts', route: '/users', roles: ['Administrador'] },
   ];
 
   readonly userName = computed(() => this.authService.userName());

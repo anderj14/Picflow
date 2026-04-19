@@ -1,5 +1,19 @@
 namespace Picflow.Core.Enums;
 
+public enum EstadoPreOrden
+{
+    Borrador,
+    Confirmada,
+    Convertida,
+    Cancelada
+}
+
+public enum TipoSubCategoria
+{
+    Tamanio,
+    TipoAcabado
+}
+
 public enum EstadoCita
 {
     Pendiente,

@@ -10,4 +10,5 @@ public class Cliente : BaseEntity
     public string Cedula { get; set; } = string.Empty;
     public string Direccion { get; set; } = string.Empty;
     public string Notas { get; set; } = string.Empty;
+    public decimal SaldoFavor { get; set; } = 0;
 }

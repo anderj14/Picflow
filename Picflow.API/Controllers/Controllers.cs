@@ -34,6 +34,23 @@ public class AuthController(IAuthService authService) : ControllerBase
 [Authorize]
 public class UsuariosController(IUsuarioRepository usuarioRepo) : ControllerBase
 {
+    [HttpGet]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> GetAll()
+    {
+        var usuarios = await usuarioRepo.GetAllAsync();
+        var result = usuarios.Select(u => new
+        {
+            id = u.Id,
+            nombre = u.Nombre,
+            email = u.Email,
+            rol = u.Rol.ToString(),
+            activo = u.Activo,
+            creadoEn = u.CreadoEn
+        });
+        return Ok(result);
+    }
+
     [HttpGet("fotografos")]
     public async Task<IActionResult> GetFotografos()
     {
@@ -47,6 +64,17 @@ public class UsuariosController(IUsuarioRepository usuarioRepo) : ControllerBase
             rol = u.Rol.ToString()
         });
         return Ok(todos);
+    }
+
+    [HttpPatch("{id}/rol")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> UpdateRol(string id, [FromBody] UpdateRolUsuarioRequest request)
+    {
+        var usuario = await usuarioRepo.GetByIdAsync(id);
+        if (usuario is null) return NotFound();
+        usuario.Rol = request.Rol;
+        await usuarioRepo.UpdateAsync(id, usuario);
+        return Ok(new { id = usuario.Id, rol = usuario.Rol.ToString() });
     }
 }
 
@@ -171,6 +199,17 @@ public class FotografiasController(IFotografiaService fotografiaService) : Contr
         return Ok(result);
     }
 
+    [HttpPost("{id}/opciones-impresion")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> AgregarOpcionImpresion(
+        string id, [FromBody] AgregarOpcionImpresionRequest request) =>
+        Ok(await fotografiaService.AgregarOpcionImpresionAsync(id, request));
+
+    [HttpDelete("{id}/opciones-impresion/{subCategoriaId}")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> EliminarOpcionImpresion(string id, string subCategoriaId) =>
+        Ok(await fotografiaService.EliminarOpcionImpresionAsync(id, subCategoriaId));
+
     [HttpPatch("entregar")]
     [Authorize(Roles = "Administrador,Fotografo")]
     public async Task<IActionResult> MarcarEntregadas([FromBody] List<string> ids)
@@ -219,4 +258,151 @@ public class FacturasController(IFacturaService facturaService) : ControllerBase
     public async Task<IActionResult> RegistrarPago(
         string facturaId, [FromBody] CreatePagoRequest request) =>
         Ok(await facturaService.RegistrarPagoAsync(facturaId, request));
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+[Produces("application/json")]
+public class PagosController(IPagoService pagoService) : ControllerBase
+{
+    [HttpGet("cliente/{clienteId}")]
+    public async Task<IActionResult> GetHistorialByCliente(string clienteId) =>
+        Ok(await pagoService.GetHistorialByClienteAsync(clienteId));
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+[Produces("application/json")]
+public class CategoriasController(ICategoriaService categoriaService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await categoriaService.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(string id) =>
+        Ok(await categoriaService.GetByIdAsync(id));
+
+    [HttpPost]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Create([FromBody] CreateCategoriaRequest request)
+    {
+        var result = await categoriaService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Update(string id, [FromBody] UpdateCategoriaRequest request) =>
+        Ok(await categoriaService.UpdateAsync(id, request));
+
+    [HttpPost("{id}/subcategorias")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> AgregarSubCategoria(
+        string id, [FromBody] CreateSubCategoriaRequest request) =>
+        Ok(await categoriaService.AgregarSubCategoriaAsync(id, request));
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        await categoriaService.DeleteAsync(id);
+        return NoContent();
+    }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+[Produces("application/json")]
+public class ServiciosController(IServicioService servicioService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await servicioService.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(string id) =>
+        Ok(await servicioService.GetByIdAsync(id));
+
+    [HttpGet("categoria/{categoriaId}")]
+    public async Task<IActionResult> GetByCategoria(string categoriaId) =>
+        Ok(await servicioService.GetByCategoriaAsync(categoriaId));
+
+    [HttpGet("barcode/{codigo}")]
+    public async Task<IActionResult> GetByCodigoBarras(string codigo)
+    {
+        var result = await servicioService.GetByCodigoBarrasAsync(codigo);
+        if (result is null) return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Create([FromBody] CreateServicioRequest request)
+    {
+        var result = await servicioService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Update(string id, [FromBody] UpdateServicioRequest request) =>
+        Ok(await servicioService.UpdateAsync(id, request));
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        await servicioService.DeleteAsync(id);
+        return NoContent();
+    }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+[Produces("application/json")]
+public class PreOrdenesController(IPreOrdenService preOrdenService) : ControllerBase
+{
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(string id) =>
+        Ok(await preOrdenService.GetByIdAsync(id));
+
+    [HttpGet("cliente/{clienteId}")]
+    public async Task<IActionResult> GetByCliente(string clienteId) =>
+        Ok(await preOrdenService.GetByClienteAsync(clienteId));
+
+    [HttpGet("pendientes")]
+    public async Task<IActionResult> GetPendientes() =>
+        Ok(await preOrdenService.GetPendientesAsync());
+
+    [HttpPost]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> Create([FromBody] CreatePreOrdenRequest request)
+    {
+        var result = await preOrdenService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPatch("{id}/confirmar")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> Confirmar(string id) =>
+        Ok(await preOrdenService.ConfirmarAsync(id));
+
+    [HttpPost("{id}/convertir")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> ConvertirAFactura(
+        string id, [FromBody] ConvertirPreOrdenRequest request) =>
+        Ok(await preOrdenService.ConvertirAFacturaAsync(id, request));
+
+    [HttpPatch("{id}/cancelar")]
+    [Authorize(Roles = "Administrador,Recepcionista")]
+    public async Task<IActionResult> Cancelar(string id)
+    {
+        await preOrdenService.CancelarAsync(id);
+        return NoContent();
+    }
 }

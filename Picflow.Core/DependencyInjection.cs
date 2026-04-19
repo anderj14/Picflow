@@ -13,6 +13,10 @@ public static class DependencyInjection
         services.AddScoped<ICitaService, CitaService>();
         services.AddScoped<IFotografiaService, FotografiaService>();
         services.AddScoped<IFacturaService, FacturaService>();
+        services.AddScoped<IPagoService, PagoService>();
+        services.AddScoped<ICategoriaService, CategoriaService>();
+        services.AddScoped<IServicioService, ServicioService>();
+        services.AddScoped<IPreOrdenService, PreOrdenService>();
         return services;
     }
 }

@@ -37,6 +37,8 @@ public interface IFotografiaService
     Task<IEnumerable<FotografiaResponse>> GetByCitaAsync(string citaId);
     Task<IEnumerable<FotografiaResponse>> GetByClienteAsync(string clienteId);
     Task<FotografiaResponse> UploadAsync(UploadFotografiaRequest request);
+    Task<FotografiaResponse> AgregarOpcionImpresionAsync(string fotografiaId, AgregarOpcionImpresionRequest request);
+    Task<FotografiaResponse> EliminarOpcionImpresionAsync(string fotografiaId, string subCategoriaId);
     Task MarcarEntregadasAsync(IEnumerable<string> ids);
     Task DeleteAsync(string id);
 }
@@ -48,6 +50,43 @@ public interface IFacturaService
     Task<IEnumerable<FacturaResponse>> GetPendientesAsync();
     Task<FacturaResponse> CreateAsync(CreateFacturaRequest request);
     Task<PagoResponse> RegistrarPagoAsync(string facturaId, CreatePagoRequest request);
+}
+
+public interface IPagoService
+{
+    Task<HistorialPagosResponse> GetHistorialByClienteAsync(string clienteId);
+}
+
+public interface ICategoriaService
+{
+    Task<CategoriaResponse> GetByIdAsync(string id);
+    Task<IEnumerable<CategoriaResponse>> GetAllAsync();
+    Task<CategoriaResponse> CreateAsync(CreateCategoriaRequest request);
+    Task<CategoriaResponse> UpdateAsync(string id, UpdateCategoriaRequest request);
+    Task<CategoriaResponse> AgregarSubCategoriaAsync(string id, CreateSubCategoriaRequest request);
+    Task DeleteAsync(string id);
+}
+
+public interface IServicioService
+{
+    Task<ServicioResponse> GetByIdAsync(string id);
+    Task<IEnumerable<ServicioResponse>> GetAllAsync();
+    Task<IEnumerable<ServicioResponse>> GetByCategoriaAsync(string categoriaId);
+    Task<ServicioResponse?> GetByCodigoBarrasAsync(string codigoBarras);
+    Task<ServicioResponse> CreateAsync(CreateServicioRequest request);
+    Task<ServicioResponse> UpdateAsync(string id, UpdateServicioRequest request);
+    Task DeleteAsync(string id);
+}
+
+public interface IPreOrdenService
+{
+    Task<PreOrdenResponse> GetByIdAsync(string id);
+    Task<IEnumerable<PreOrdenResponse>> GetByClienteAsync(string clienteId);
+    Task<IEnumerable<PreOrdenResponse>> GetPendientesAsync();
+    Task<PreOrdenResponse> CreateAsync(CreatePreOrdenRequest request);
+    Task<PreOrdenResponse> ConfirmarAsync(string id);
+    Task<FacturaResponse> ConvertirAFacturaAsync(string id, ConvertirPreOrdenRequest request);
+    Task CancelarAsync(string id);
 }
 
 public interface IReporteService
