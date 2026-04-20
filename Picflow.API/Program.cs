@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Picflow.API.Middleware;
 using Picflow.Core;
-using Picflow.Core.Services;       // JwtSettings lives here
 using Picflow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,11 +102,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Picflow API v1"));
 }
 
-app.UseHttpsRedirection();
 app.UseCors("PicflowCors");
+app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapFallbackToFile("index.html");
 
 app.Run();

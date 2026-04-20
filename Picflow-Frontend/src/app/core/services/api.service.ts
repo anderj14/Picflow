@@ -8,7 +8,7 @@ import { Fotografia } from '../models/fotografia.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly base = 'http://localhost:5000/api';
+  private readonly base = '/api';
 
   constructor(private http: HttpClient) { }
 
@@ -70,7 +70,7 @@ export class ApiService {
 
   // ── Facturas ──────────────────────────────────────────────────────────────
   getFacturas(): Observable<Factura[]> {
-    return this.http.get<Factura[]>(`${this.base}/facturas/pendientes`);
+    return this.http.get<Factura[]>(`${this.base}/facturas`);
   }
 
   getFacturasByCliente(clienteId: string): Observable<Factura[]> {

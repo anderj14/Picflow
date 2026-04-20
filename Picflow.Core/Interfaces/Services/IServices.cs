@@ -43,6 +43,7 @@ public interface IFotografiaService
 
 public interface IFacturaService
 {
+    Task<IEnumerable<FacturaResponse>> GetAllAsync();
     Task<FacturaResponse> GetByIdAsync(string id);
     Task<IEnumerable<FacturaResponse>> GetByClienteAsync(string clienteId);
     Task<IEnumerable<FacturaResponse>> GetPendientesAsync();

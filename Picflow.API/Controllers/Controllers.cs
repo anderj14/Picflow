@@ -194,6 +194,10 @@ public class FotografiasController(IFotografiaService fotografiaService) : Contr
 [Produces("application/json")]
 public class FacturasController(IFacturaService facturaService) : ControllerBase
 {
+    [HttpGet]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await facturaService.GetAllAsync());
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id) =>
         Ok(await facturaService.GetByIdAsync(id));

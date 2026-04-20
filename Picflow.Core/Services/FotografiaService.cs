@@ -88,6 +88,12 @@ public class FacturaService(
         return await Task.WhenAll(facturas.Select(MapToResponseAsync));
     }
 
+    public async Task<IEnumerable<FacturaResponse>> GetAllAsync()
+    {
+        var facturas = await facturaRepo.GetAllAsync();
+        return await Task.WhenAll(facturas.Select(MapToResponseAsync));
+    }
+
     public async Task<IEnumerable<FacturaResponse>> GetPendientesAsync()
     {
         var facturas = await facturaRepo.GetByEstadoAsync(Enums.EstadoFactura.Pendiente);

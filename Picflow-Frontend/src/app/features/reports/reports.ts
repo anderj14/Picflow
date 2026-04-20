@@ -31,7 +31,8 @@ export class Reports implements OnInit, AfterViewInit {
     const c = this.citas();
     const totalRevenue = f.filter(x => x.estado === 'Pagada').reduce((s, x) => s + x.total, 0);
     const totalPendiente = f.filter(x => x.estado !== 'Pagada').reduce((s, x) => s + x.saldoPendiente, 0);
-    const avgBooking = f.length ? totalRevenue / f.filter(x => x.estado === 'Pagada').length : 0;
+    const pagadas = f.filter(x => x.estado === 'Pagada').length;
+    const avgBooking = pagadas ? totalRevenue / pagadas : 0;
     return {
       totalRevenue, totalPendiente, avgBooking,
       totalCitas: c.length,
