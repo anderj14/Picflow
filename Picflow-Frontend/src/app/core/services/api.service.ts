@@ -114,4 +114,22 @@ export class ApiService {
   getFotografos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/usuarios/fotografos`);
   }
+
+  getUsuarios(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/usuarios`);
+  }
+
+  registrarUsuario(data: any): Observable<any> {
+    return this.http.post(`${this.base}/auth/register`, data);
+  }
+
+  updateRolUsuario(id: string, rol: string): Observable<any> {
+    return this.http.patch(`${this.base}/usuarios/${id}/rol`, JSON.stringify(rol), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  toggleActivoUsuario(id: string): Observable<any> {
+    return this.http.patch(`${this.base}/usuarios/${id}/toggle`, {});
+  }
 }

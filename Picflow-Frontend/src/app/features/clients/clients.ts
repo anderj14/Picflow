@@ -1,7 +1,11 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { Cliente, CreateClienteRequest } from '../../core/models/cliente.model';
+import { Cita } from '../../core/models/cita.model';
+import { Factura } from '../../core/models/factura.model';
+import { Fotografia } from '../../core/models/fotografia.model';
 
 @Component({
   selector: 'app-clients',
@@ -21,6 +25,19 @@ export class Clients implements OnInit {
   // Pagination
   currentPage   = signal(1);
   pageSize      = 8;
+
+  // Transaction history
+  showHistory      = signal(false);
+  selectedCliente  = signal<Cliente | null>(null);
+  historyLoading   = signal(false);
+  historyTab       = signal<'citas' | 'fotografias' | 'facturas'>('citas');
+  citas            = signal<Cita[]>([]);
+  facturas         = signal<Factura[]>([]);
+  fotografias      = signal<Fotografia[]>([]);
+
+  readonly totalCobrado = computed(() =>
+    this.facturas().reduce((sum, f) => sum + f.totalPagado, 0)
+  );
 
   form: CreateClienteRequest = this.emptyForm();
 
@@ -56,6 +73,39 @@ export class Clients implements OnInit {
       next: (data) => { this.clientes.set(data); this.loading.set(false); },
       error: ()     => this.loading.set(false),
     });
+  }
+
+  openHistory(cliente: Cliente) {
+    this.selectedCliente.set(cliente);
+    this.historyTab.set('citas');
+    this.historyLoading.set(true);
+    this.citas.set([]);
+    this.facturas.set([]);
+    this.fotografias.set([]);
+    this.showHistory.set(true);
+
+    forkJoin({
+      citas:       this.api.getCitasByCliente(cliente.id),
+      facturas:    this.api.getFacturasByCliente(cliente.id),
+      fotografias: this.api.getFotografiasByCliente(cliente.id),
+    }).subscribe({
+      next: ({ citas, facturas, fotografias }) => {
+        this.citas.set(citas);
+        this.facturas.set(facturas);
+        this.fotografias.set(fotografias);
+        this.historyLoading.set(false);
+      },
+      error: () => this.historyLoading.set(false),
+    });
+  }
+
+  closeHistory() {
+    this.showHistory.set(false);
+    this.selectedCliente.set(null);
+  }
+
+  setHistoryTab(tab: 'citas' | 'fotografias' | 'facturas') {
+    this.historyTab.set(tab);
   }
 
   openCreate() {
@@ -123,6 +173,38 @@ export class Clients implements OnInit {
     return new Date(dateStr).toLocaleDateString('es-DO', {
       day: '2-digit', month: 'short', year: 'numeric'
     });
+  }
+
+  formatDateTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleString('es-DO', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(amount);
+  }
+
+  estadoCitaBadgeClass(estado: string): string {
+    const colors: Record<string, string> = {
+      Pendiente:  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      Confirmada: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      EnProceso:  'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      Completada: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      Cancelada:  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return `text-xs font-semibold px-2.5 py-1 rounded-full ${colors[estado] ?? 'bg-slate-100 text-slate-600'}`;
+  }
+
+  estadoFacturaBadgeClass(estado: string): string {
+    const colors: Record<string, string> = {
+      Pendiente:   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      PagoParcial: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      Pagada:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      Anulada:     'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    };
+    return `text-xs font-semibold px-2.5 py-1 rounded-full ${colors[estado] ?? 'bg-slate-100 text-slate-600'}`;
   }
 
   setPage(page: number) {

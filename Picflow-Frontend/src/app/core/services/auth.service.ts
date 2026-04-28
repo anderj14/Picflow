@@ -10,7 +10,7 @@ const USER_KEY = 'picflow_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:5000/api';
+  private readonly apiUrl = '/api';
 
   private _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
   private _user = signal<AuthResponse | null>(

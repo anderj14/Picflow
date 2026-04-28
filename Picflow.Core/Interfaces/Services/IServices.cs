@@ -1,5 +1,6 @@
 using Picflow.Core.DTOs.Request;
 using Picflow.Core.DTOs.Response;
+using Picflow.Core.Enums;
 
 namespace Picflow.Core.Interfaces.Services;
 
@@ -7,6 +8,13 @@ public interface IAuthService
 {
     Task<AuthResponse> LoginAsync(LoginRequest request);
     Task<UsuarioResponse> RegisterAsync(CreateUsuarioRequest request);
+}
+
+public interface IUsuarioService
+{
+    Task<IEnumerable<UsuarioResponse>> GetAllAsync();
+    Task<UsuarioResponse> UpdateRolAsync(string id, RolUsuario rol);
+    Task<UsuarioResponse> ToggleActivoAsync(string id);
 }
 
 public interface IClienteService

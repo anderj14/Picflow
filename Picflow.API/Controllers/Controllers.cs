@@ -32,7 +32,9 @@ public class AuthController(IAuthService authService) : ControllerBase
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class UsuariosController(IUsuarioRepository usuarioRepo) : ControllerBase
+public class UsuariosController(
+    IUsuarioRepository usuarioRepo,
+    IUsuarioService usuarioService) : ControllerBase
 {
     [HttpGet("fotografos")]
     public async Task<IActionResult> GetFotografos()
@@ -48,6 +50,21 @@ public class UsuariosController(IUsuarioRepository usuarioRepo) : ControllerBase
         });
         return Ok(todos);
     }
+
+    [HttpGet]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await usuarioService.GetAllAsync());
+
+    [HttpPatch("{id}/rol")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> UpdateRol(string id, [FromBody] RolUsuario rol) =>
+        Ok(await usuarioService.UpdateRolAsync(id, rol));
+
+    [HttpPatch("{id}/toggle")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> ToggleActivo(string id) =>
+        Ok(await usuarioService.ToggleActivoAsync(id));
 }
 
 [ApiController]
