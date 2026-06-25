@@ -2,23 +2,73 @@
 
 Sistema de gestión digital para **Acción Fotovídeo**, Santiago de los Caballeros, RD.
 
-Permite administrar clientes, citas, fotografías, facturas y reportes desde una interfaz web con control de acceso por roles.
+Permite administrar clientes, citas, fotografías, facturas, reportes y usuarios desde una interfaz web con control de acceso por roles. Incluye un sitio público con agenda de citas online y confirmación por correo electrónico.
 
 ---
 
 ## Capturas de pantalla
 
+### Público
+
 | Pantalla | Vista previa |
 |----------|-------------|
 | Home | <img src="screenshots/home.png" width="200" alt="Home"> |
 | Login | <img src="screenshots/login.png" width="200" alt="Login"> |
-| Dashboard | <img src="screenshots/dashboard.png" width="200" alt="Dashboard"> |
-| Clientes | <img src="screenshots/clientes.png" width="200" alt="Clientes"> |
-| Citas | <img src="screenshots/citas.png" width="200" alt="Citas"> |
-| Facturas | <img src="screenshots/facturas.png" width="200" alt="Facturas"> |
-| Reportes | <img src="screenshots/reportes.png" width="200" alt="Reportes"> |
 
-Puedes agregar tus capturas en la carpeta `screenshots/` con esos nombres.
+### Agenda de citas (público)
+
+| Paso | Vista previa |
+|------|-------------|
+| Selección de fecha | <img src="screenshots/agendar-cita-seleccion-fecha.png" width="200" alt="Seleccionar fecha"> |
+| Selección de hora | <img src="screenshots/agendar-cita-seleccion-hora.png" width="200" alt="Seleccionar hora"> |
+| Información del cliente | <img src="screenshots/agendar-cita-ingreso-informacion-cliente.png" width="200" alt="Información del cliente"> |
+| Confirmación | <img src="screenshots/agendar-cita-confirmacion.png" width="200" alt="Confirmación"> |
+
+### Confirmación por correo
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Cita confirmada | <img src="screenshots/confirmacion-cita-confirmada.png" width="200" alt="Cita confirmada"> |
+| Correo Gmail | <img src="screenshots/confirmacion-cita-gmail.png" width="200" alt="Correo de confirmación"> |
+
+### Dashboard
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Dashboard | <img src="screenshots/dashboard.png" width="200" alt="Dashboard"> |
+
+### Clientes
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Lista de clientes | <img src="screenshots/lista-cliente.png" width="200" alt="Lista de clientes"> |
+| Información del cliente | <img src="screenshots/info-cliente.png" width="200" alt="Información del cliente"> |
+| Imágenes del cliente | <img src="screenshots/imagenes-clientes.png" width="200" alt="Imágenes del cliente"> |
+
+### Citas (interno)
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Lista de citas | <img src="screenshots/citas-lista.png" width="200" alt="Lista de citas"> |
+| Calendario de citas | <img src="screenshots/citas-calendario.png" width="200" alt="Calendario de citas"> |
+
+### Facturación
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Facturación | <img src="screenshots/facturacion.png" width="200" alt="Facturación"> |
+
+### Reportes
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Reportes | <img src="screenshots/reporte.png" width="200" alt="Reportes"> |
+
+### Usuarios
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Usuarios | <img src="screenshots/usuarios.png" width="200" alt="Usuarios"> |
 
 ---
 
@@ -32,6 +82,7 @@ Puedes agregar tus capturas en la carpeta `screenshots/` con esos nombres.
 | Autenticación | JWT Bearer |
 | Base de datos | MongoDB Atlas |
 | Almacenamiento de medios | Cloudinary |
+| Correo electrónico | SMTP Gmail (confirmación de citas) |
 | Despliegue | Azure App Service |
 
 ---
@@ -43,17 +94,18 @@ Picflow/
 ├── Picflow.sln
 │
 ├── Picflow.API/                  ← Capa de presentación (REST)
-│   ├── Controllers/              ← Endpoints por módulo
+│   ├── Controllers/              ← Endpoints por módulo (Controllers.cs)
 │   ├── Middleware/               ← ExceptionMiddleware global
 │   ├── Program.cs                ← Entry point y configuración DI
 │   └── appsettings.json
 │
 ├── Picflow.Core/                 ← Dominio y lógica de negocio
-│   ├── Entities/                 ← Modelos: Usuario, Cliente, Cita, Fotografia, Factura, Pago
+│   ├── Entities/                 ← Modelos: Usuario, Cliente, Cita, Fotografia, Factura
 │   ├── Interfaces/
 │   │   ├── Repositories/         ← Contratos de acceso a datos
 │   │   └── Services/             ← Contratos de servicios
-│   ├── Services/                 ← AuthService, ClienteService, CitaService, etc.
+│   ├── Services/                 ← AuthService, CitaService, ClienteService, EmailService,
+│   │                               FotografiaService, PublicReservaService, UsuarioService
 │   ├── DTOs/
 │   │   ├── Request/              ← Entrada de datos
 │   │   └── Response/             ← Salida de datos
@@ -67,25 +119,35 @@ Picflow/
 │   ├── Persistence/              ← PicflowDbContext (6 colecciones)
 │   └── Configuration/            ← Serialización BSON, MongoDbConfiguration
 │
-└── picflow-frontend/             ← Angular SPA
-    └── src/app/
-        ├── core/
-        │   ├── services/         ← api.service.ts, auth.service.ts
-        │   ├── guards/           ← auth.guard.ts
-        │   ├── interceptors/     ← auth.interceptor.ts (adjunta JWT)
-        │   └── models/           ← Interfaces TypeScript de cada entidad
-        ├── features/
-        │   ├── auth/login/       ← Pantalla de inicio de sesión
-        │   ├── dashboard/        ← Panel principal con métricas
-        │   ├── clients/          ← Gestión de clientes
-        │   ├── appointments/     ← Gestión de citas
-        │   ├── assets/           ← Biblioteca de fotografías
-        │   ├── invoices/         ← Facturas y pagos
-        │   └── reports/          ← Reportes y analítica
-        └── shared/components/
-            ├── layout/           ← Contenedor principal autenticado
-            ├── sidebar/          ← Navegación lateral
-            └── header/           ← Barra superior
+├── picflow-frontend/             ← Angular SPA
+│   ├── public/                   ← Imágenes públicas del sitio
+│   └── src/app/
+│       ├── core/
+│       │   ├── services/         ← api.service.ts, auth.service.ts, theme.service.ts
+│       │   ├── guards/           ← auth.guard.ts, admin.guard.ts
+│       │   ├── interceptors/     ← auth.interceptor.ts (adjunta JWT)
+│       │   └── models/           ← Interfaces TypeScript de cada entidad
+│       ├── public/               ← Páginas públicas (sin autenticación)
+│       │   ├── home/             ← Landing page con galería de servicios
+│       │   ├── services/         ← Listado de servicios del estudio
+│       │   ├── booking/          ← Agenda de citas online (3 pasos)
+│       │   └── public-layout/    ← Layout público con header/footer
+│       ├── features/
+│       │   ├── auth/login/       ← Pantalla de inicio de sesión
+│       │   ├── dashboard/        ← Panel principal con métricas
+│       │   ├── clients/          ← Gestión de clientes
+│       │   ├── appointments/     ← Gestión de citas
+│       │   ├── assets/           ← Biblioteca de fotografías
+│       │   ├── invoices/         ← Facturas y pagos
+│       │   ├── reports/          ← Reportes y analítica
+│       │   └── users/            ← Gestión de usuarios (admin)
+│       └── shared/components/
+│           ├── layout/           ← Contenedor principal autenticado
+│           ├── sidebar/          ← Navegación lateral
+│           └── header/           ← Barra superior
+│
+├── screenshots/                  ← Capturas de pantalla de la aplicación
+└── .gitignore
 ```
 
 ---
@@ -104,17 +166,30 @@ API ──► Core ◄── Infrastructure
 
 ## Módulos del frontend
 
+### Rutas públicas
+
 | Ruta | Módulo | Descripción |
 |------|--------|-------------|
-| `/login` | Auth | Autenticación pública |
-| `/dashboard` | Dashboard | Métricas y resumen general |
-| `/clients` | Clients | Alta, edición y búsqueda de clientes |
-| `/appointments` | Appointments | Agenda y gestión de citas |
-| `/assets` | Assets | Subida y visualización de fotografías |
-| `/invoices` | Invoices | Emisión de facturas y registro de pagos |
-| `/reports` | Reports | Reportes de ingresos y actividad |
+| `/` | Home | Landing page con galería de servicios |
+| `/servicios` | Services | Listado de servicios del estudio |
+| `/agendar` | Booking | Agenda de cita online (3 pasos) |
+| `/login` | Auth | Inicio de sesión |
 
-Todas las rutas excepto `/login` requieren autenticación (`authGuard`). Los módulos se cargan de forma diferida (lazy loading).
+### Rutas privadas (requieren autenticación)
+
+Todas bajo el prefijo `/app`.
+
+| Ruta | Módulo | Descripción | Acceso |
+|------|--------|-------------|--------|
+| `/app/dashboard` | Dashboard | Métricas y resumen general | Autenticado |
+| `/app/clients` | Clients | Alta, edición y búsqueda de clientes | Autenticado |
+| `/app/appointments` | Appointments | Agenda y gestión de citas | Autenticado |
+| `/app/assets` | Assets | Subida y visualización de fotografías | Autenticado |
+| `/app/invoices` | Invoices | Emisión de facturas y registro de pagos | Autenticado |
+| `/app/reports` | Reports | Reportes de ingresos y actividad | Autenticado |
+| `/app/users` | Users | Gestión de usuarios del sistema | Administrador |
+
+> Todas las rutas privadas usan `authGuard`. La ruta `/app/users` requiere además `adminGuard`. Los módulos se cargan de forma diferida (lazy loading).
 
 ---
 
@@ -126,6 +201,15 @@ Todas las rutas excepto `/login` requieren autenticación (`authGuard`). Los mó
 |--------|------|--------|
 | POST | `/api/auth/login` | Público |
 | POST | `/api/auth/register` | Administrador |
+
+### Usuarios
+
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET | `/api/usuarios/fotografos` | Autenticado |
+| GET | `/api/usuarios` | Administrador |
+| PATCH | `/api/usuarios/{id}/rol` | Administrador |
+| PATCH | `/api/usuarios/{id}/toggle` | Administrador |
 
 ### Clientes
 
@@ -165,11 +249,19 @@ Todas las rutas excepto `/login` requieren autenticación (`authGuard`). Los mó
 
 | Método | Ruta | Acceso |
 |--------|------|--------|
+| GET | `/api/facturas` | Autenticado |
 | GET | `/api/facturas/{id}` | Autenticado |
 | GET | `/api/facturas/cliente/{clienteId}` | Autenticado |
 | GET | `/api/facturas/pendientes` | Autenticado |
 | POST | `/api/facturas` | Administrador / Recepcionista |
 | POST | `/api/facturas/{id}/pagos` | Administrador / Recepcionista |
+
+### Público (sin autenticación)
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/public/disponibilidad?fecha=` | Horarios disponibles para una fecha |
+| POST | `/api/public/reservar` | Registrar cita desde el sitio público |
 
 ---
 
@@ -223,7 +315,11 @@ dotnet user-secrets set "Cloudinary:ApiSecret" "tu-api-secret"
 dotnet user-secrets set "Jwt:SecretKey" "clave-secreta-de-32-o-mas-caracteres"
 dotnet user-secrets set "Jwt:Issuer" "picflow-api"
 dotnet user-secrets set "Jwt:Audience" "picflow-frontend"
+dotnet user-secrets set "Email:FromAddress" "tucorreo@gmail.com"
+dotnet user-secrets set "Email:FromPassword" "contraseña-app-gmail"
 ```
+
+> Para el envío de correos se usa SMTP de Gmail. Debes usar una [contraseña de aplicación](https://support.google.com/accounts/answer/185833) (no la contraseña normal).
 
 #### 3. Ejecutar
 
@@ -231,7 +327,7 @@ dotnet user-secrets set "Jwt:Audience" "picflow-frontend"
 dotnet run --project Picflow.API
 ```
 
-La API queda disponible en `https://localhost:7xxx` y la documentación Swagger en `/swagger`.
+La API queda disponible en `http://localhost:5000` y la documentación Swagger en `/swagger`.
 
 #### 4. Crear el primer administrador
 
@@ -248,18 +344,7 @@ cd picflow-frontend
 npm install
 ```
 
-#### 2. Configurar el entorno
-
-Edita `src/environments/environment.ts` y define la URL de la API:
-
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'https://localhost:7xxx/api'
-};
-```
-
-#### 3. Ejecutar en desarrollo
+#### 2. Ejecutar en desarrollo
 
 ```bash
 npm start
@@ -267,13 +352,17 @@ npm start
 
 La app queda disponible en `http://localhost:4200`.
 
-#### 4. Build para producción
+> El frontend usa la ruta relativa `/api` gracias al proxy de Angular CLI definido en `angular.json`. En desarrollo, las peticiones se redirigen al backend en `http://localhost:5000`.
+
+#### 3. Build para producción
 
 ```bash
 npm run build
 ```
 
-Los artefactos se generan en `dist/picflow-frontend/`.
+Los artefactos se generan directamente en `Picflow.API/wwwroot/` para que el backend de ASP.NET los sirva como archivos estáticos.
+
+
 
 ---
 
@@ -282,6 +371,12 @@ Los artefactos se generan en `dist/picflow-frontend/`.
 ### Backend — App Service
 
 ```bash
+# 1. Build del frontend (se copia automáticamente a wwwroot)
+cd picflow-frontend
+npm run build
+
+# 2. Publicar el backend (incluye wwwroot con el frontend)
+cd ..
 dotnet publish Picflow.API -c Release -o ./publish
 ```
 
@@ -296,19 +391,6 @@ Cloudinary__ApiSecret
 Jwt__SecretKey
 Jwt__Issuer
 Jwt__Audience
+Email__FromAddress
+Email__FromPassword
 ```
-
-### CI/CD con GitHub Actions
-
-Crear `.github/workflows/deploy-api.yml` y agregar el secreto `AZURE_WEBAPP_PUBLISH_PROFILE` en el repositorio.
-
----
-
-## Próximos pasos sugeridos
-
-- [ ] Seed de datos iniciales (primer administrador)
-- [ ] Validaciones con FluentValidation
-- [ ] Tests unitarios — xUnit + Moq (backend) / Vitest (frontend)
-- [ ] Rate limiting en endpoints públicos
-- [ ] Logging estructurado con Serilog → Azure Application Insights
-- [ ] Notificaciones por correo al confirmar/cancelar citas
