@@ -3,13 +3,41 @@ import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
+  // ── Rutas públicas ────────────────────────────────────────────────────────
+  {
+    path: '',
+    loadComponent: () =>
+      import('./public/public-layout/public-layout').then(m => m.PublicLayout),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./public/home/home').then(m => m.Home),
+      },
+      {
+        path: 'servicios',
+        loadComponent: () =>
+          import('./public/services/services').then(m => m.Services),
+      },
+      {
+        path: 'agendar',
+        loadComponent: () =>
+          import('./public/booking/booking').then(m => m.Booking),
+      },
+    ],
+  },
+
+  // ── Login ─────────────────────────────────────────────────────────────────
   {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login').then(m => m.Login),
   },
+
+  // ── Panel de administración ───────────────────────────────────────────────
   {
-    path: '',
+    path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/components/layout/layout').then(m => m.Layout),
@@ -53,5 +81,6 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: 'login' },
+
+  { path: '**', redirectTo: '' },
 ];

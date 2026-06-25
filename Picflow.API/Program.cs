@@ -4,11 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Picflow.API.Middleware;
 using Picflow.Core;
+using Picflow.Core.Services;
 using Picflow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Core services ─────────────────────────────────────────────────────────────
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddCore();
 
 // ── Infrastructure (MongoDB + Cloudinary + Repositories + JWT token svc) ─────
@@ -44,7 +46,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                ?? ["http://localhost:4200"])
+                ?? ["https://females-anatomy-results-facilitate.trycloudflare.com"])
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -103,7 +105,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("PicflowCors");
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthentication();

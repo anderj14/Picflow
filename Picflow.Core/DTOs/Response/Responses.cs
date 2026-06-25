@@ -113,3 +113,19 @@ public record IngresoMensualResponse(
     decimal Total,
     int CantidadFacturas
 );
+
+public record SlotDisponibilidadResponse(
+    string Hora,
+    DateTime FechaHora,
+    bool Disponible
+);
+
+public record ReservaConfirmadaResponse(
+    string CitaId,
+    string NombreCliente,
+    string Email,
+    DateTime FechaHora,
+    string Servicio,
+    string Estado,
+    string Mensaje
+);

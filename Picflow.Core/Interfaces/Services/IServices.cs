@@ -73,3 +73,15 @@ public interface IMediaService
 }
 
 public record MediaUploadResult(string PublicId, string Url, long Bytes, string Format);
+
+public interface IEmailService
+{
+    Task SendConfirmacionCitaAsync(string toEmail, string nombreCliente, DateTime fechaHora, string servicio, string citaId);
+    Task SendCitaConfirmadaAsync(string toEmail, string nombreCliente, DateTime fechaHora, string servicio, string ubicacion, string citaId);
+}
+
+public interface IPublicReservaService
+{
+    Task<IEnumerable<SlotDisponibilidadResponse>> GetDisponibilidadAsync(DateTime fecha);
+    Task<ReservaConfirmadaResponse> ReservarAsync(ReservaPublicaRequest request);
+}

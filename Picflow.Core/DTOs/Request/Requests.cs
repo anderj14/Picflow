@@ -76,3 +76,15 @@ public record CreatePagoRequest(
     string Referencia,
     string Notas
 );
+
+public record ReservaPublicaRequest(
+    string Nombre,
+    string Email,
+    string Telefono,
+    string Cedula,
+    string Servicio,
+    DateTime FechaHora,
+    int DuracionMinutos,
+    string Notas,
+    string Ubicacion
+);

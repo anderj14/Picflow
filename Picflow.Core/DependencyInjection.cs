@@ -14,6 +14,8 @@ public static class DependencyInjection
         services.AddScoped<IFotografiaService, FotografiaService>();
         services.AddScoped<IFacturaService, FacturaService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IPublicReservaService, PublicReservaService>();
         return services;
     }
 }

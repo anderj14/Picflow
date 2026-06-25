@@ -6,6 +6,22 @@ Permite administrar clientes, citas, fotografías, facturas y reportes desde una
 
 ---
 
+## Capturas de pantalla
+
+| Pantalla | Vista previa |
+|----------|-------------|
+| Home | <img src="screenshots/home.png" width="200" alt="Home"> |
+| Login | <img src="screenshots/login.png" width="200" alt="Login"> |
+| Dashboard | <img src="screenshots/dashboard.png" width="200" alt="Dashboard"> |
+| Clientes | <img src="screenshots/clientes.png" width="200" alt="Clientes"> |
+| Citas | <img src="screenshots/citas.png" width="200" alt="Citas"> |
+| Facturas | <img src="screenshots/facturas.png" width="200" alt="Facturas"> |
+| Reportes | <img src="screenshots/reportes.png" width="200" alt="Reportes"> |
+
+Puedes agregar tus capturas en la carpeta `screenshots/` con esos nombres.
+
+---
+
 ## Stack
 
 | Capa | Tecnología |

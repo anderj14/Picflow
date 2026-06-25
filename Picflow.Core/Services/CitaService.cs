@@ -11,7 +11,8 @@ namespace Picflow.Core.Services;
 public class CitaService(
     ICitaRepository citaRepo,
     IClienteRepository clienteRepo,
-    IUsuarioRepository usuarioRepo) : ICitaService
+    IUsuarioRepository usuarioRepo,
+    IEmailService emailService) : ICitaService
 {
     public async Task<CitaResponse> GetByIdAsync(string id)
     {
@@ -97,6 +98,19 @@ public class CitaService(
         cita.ActualizadoEn = DateTime.UtcNow;
 
         await citaRepo.UpdateAsync(id, cita);
+
+        if (nuevoEstado == EstadoCita.Confirmada)
+        {
+            var cliente = await clienteRepo.GetByIdAsync(cita.ClienteId);
+            if (cliente is not null && !string.IsNullOrWhiteSpace(cliente.Email))
+            {
+                _ = emailService.SendCitaConfirmadaAsync(
+                    cliente.Email, cliente.Nombre, cita.FechaHora,
+                    cita.Servicio, cita.Ubicacion, cita.Id)
+                    .ContinueWith(t => { }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+        }
+
         return await MapToResponseAsync(cita);
     }
 

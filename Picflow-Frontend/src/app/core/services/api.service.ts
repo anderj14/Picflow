@@ -5,6 +5,7 @@ import { Cliente, CreateClienteRequest } from '../models/cliente.model';
 import { Cita, CreateCitaRequest } from '../models/cita.model';
 import { Factura } from '../models/factura.model';
 import { Fotografia } from '../models/fotografia.model';
+import { SlotDisponibilidad, ReservaPublicaRequest, ReservaConfirmadaResponse } from '../models/booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -131,5 +132,16 @@ export class ApiService {
 
   toggleActivoUsuario(id: string): Observable<any> {
     return this.http.patch(`${this.base}/usuarios/${id}/toggle`, {});
+  }
+
+  // ── Pública (sin auth) ────────────────────────────────────────────────────
+  getDisponibilidad(fecha: string): Observable<SlotDisponibilidad[]> {
+    return this.http.get<SlotDisponibilidad[]>(`${this.base}/public/disponibilidad`, {
+      params: new HttpParams().set('fecha', fecha)
+    });
+  }
+
+  reservarCita(data: ReservaPublicaRequest): Observable<ReservaConfirmadaResponse> {
+    return this.http.post<ReservaConfirmadaResponse>(`${this.base}/public/reservar`, data);
   }
 }

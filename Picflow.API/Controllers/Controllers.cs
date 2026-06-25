@@ -4,6 +4,7 @@ using Picflow.Core.DTOs.Request;
 using Picflow.Core.Enums;
 using Picflow.Core.Interfaces.Repositories;
 using Picflow.Core.Interfaces.Services;
+using Picflow.Core.Exceptions;
 
 namespace Picflow.API.Controllers;
 
@@ -240,4 +241,29 @@ public class FacturasController(IFacturaService facturaService) : ControllerBase
     public async Task<IActionResult> RegistrarPago(
         string facturaId, [FromBody] CreatePagoRequest request) =>
         Ok(await facturaService.RegistrarPagoAsync(facturaId, request));
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[AllowAnonymous]
+[Produces("application/json")]
+public class PublicController(IPublicReservaService reservaService) : ControllerBase
+{
+    [HttpGet("disponibilidad")]
+    public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTime fecha) =>
+        Ok(await reservaService.GetDisponibilidadAsync(fecha));
+
+    [HttpPost("reservar")]
+    public async Task<IActionResult> Reservar([FromBody] ReservaPublicaRequest request)
+    {
+        try
+        {
+            var result = await reservaService.ReservarAsync(request);
+            return Ok(result);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

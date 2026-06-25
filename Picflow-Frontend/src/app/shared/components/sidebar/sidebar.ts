@@ -95,19 +95,13 @@ interface NavItem {
 })
 export class Sidebar {
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    { label: 'Clientes', icon: 'group', route: '/clients' },
-    { label: 'Citas', icon: 'calendar_today', route: '/appointments' },
-    { label: 'Facturación', icon: 'payments', route: '/invoices' },
-    { label: 'Activos', icon: 'collections', route: '/assets' },
-    {
-      label: 'Reportes', icon: 'bar_chart', route: '/reports',
-      roles: ['Administrador']
-    },
-    {
-      label: 'Usuarios', icon: 'manage_accounts', route: '/users',
-      roles: ['Administrador']
-    },
+    { label: 'Dashboard',   icon: 'dashboard',        route: '/app/dashboard' },
+    { label: 'Clientes',    icon: 'group',             route: '/app/clients' },
+    { label: 'Citas',       icon: 'calendar_today',    route: '/app/appointments' },
+    { label: 'Facturación', icon: 'payments',          route: '/app/invoices' },
+    { label: 'Activos',     icon: 'collections',       route: '/app/assets' },
+    { label: 'Reportes',    icon: 'bar_chart',         route: '/app/reports',  roles: ['Administrador'] },
+    { label: 'Usuarios',    icon: 'manage_accounts',   route: '/app/users',    roles: ['Administrador'] },
   ];
 
   readonly userName = computed(() => this.authService.userName());

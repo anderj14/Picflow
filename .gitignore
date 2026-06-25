@@ -48,3 +48,6 @@ packages/
 
 
 **/appsettings*.json
+
+## Angular build output (served by ASP.NET)
+Picflow.API/wwwroot/
